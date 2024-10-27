@@ -3,7 +3,10 @@ name: LowlandTech.Core
 on:
   push:
     branches:
+      - develop
       - main
+    tags:
+      - '*' # Trigger on any tag creation
   workflow_dispatch:
 
 jobs:
@@ -20,6 +23,11 @@ jobs:
         with:
           dotnet-version: '8.0.x' # Use the latest .NET 8 version
 
+      # Install GitVersion
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/execute@v0
+        id: gitversion
+
       # Restore dependencies
       - name: Restore dependencies
         run: dotnet restore src/lowlandtech.core
@@ -32,13 +40,16 @@ jobs:
       - name: Run Tests
         run: dotnet test src/lowlandtech.core --no-restore --configuration Release --verbosity normal
 
-      # Pack the NuGet package
+      # Pack the NuGet package (for tags only)
       - name: Pack NuGet package
-        run: dotnet pack src/lowlandtech.core --no-restore --no-build --configuration Release -o ./nuget
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          dotnet pack src/lowlandtech.core --no-restore --no-build --configuration Release -o ./nuget /p:PackageVersion=${{ steps.gitversion.outputs.nugetVersion }}
 
-      # Publish the NuGet package
+      # Publish the NuGet package (for tags only)
       - name: Publish NuGet package
-        if: github.ref == 'refs/heads/main'
+        if: startsWith(github.ref, 'refs/tags/')
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: dotnet nuget push ./nuget/*.nupkg --source https://nuget.pkg.github.com/lowlandtech/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+        run: |
+          dotnet nuget push ./nuget/*.nupkg --source https://nuget.pkg.github.com/lowlandtech/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
