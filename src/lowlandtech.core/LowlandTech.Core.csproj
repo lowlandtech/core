@@ -7,11 +7,11 @@
 
     <!-- NuGet package metadata -->
     <PackageId>LowlandTech.Core</PackageId>
-    <Version>1.0.0</Version>
+    <Version>1.0.1</Version>
     <Authors>@wendelmva</Authors>
     <Company>LowlandTech</Company>
     <Description>Contains the core functionality for the LowlandTech framework.</Description>
-    <PackageTags>dotnet; nuget; example; lowlandtech</PackageTags>
+    <PackageTags>dotnet; nuget; lowlandtech; core</PackageTags>
     <RepositoryUrl>https://github.com/lowlandtech/core</RepositoryUrl>
     <Copyright>Copyright © 2024 LowlandTech</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -48,5 +48,11 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <Target Name="ReadReleaseNotes" BeforeTargets="Pack">
+    <ReadLinesFromFile File="../../release.md">
+      <Output TaskParameter="Lines" PropertyName="PackageReleaseNotes" />
+    </ReadLinesFromFile>
+  </Target>
 
 </Project>
