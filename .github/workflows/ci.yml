@@ -37,9 +37,9 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           dotnet pack src/lowlandtech.core --no-restore --no-build --configuration Release -o ./nuget
-          dotnet nuget push ./nuget/*.nupkg \
-          --source https://nuget.pkg.github.com/lowlandtech/index.json \
-          --api-key ${{ secrets.GITHUB_TOKEN }}
+          # dotnet nuget push ./nuget/*.nupkg \
+          # --source https://nuget.pkg.github.com/lowlandtech/index.json \
+          # --api-key ${{ secrets.GITHUB_TOKEN }}
           # dotnet nuget push ./nuget/*.nupkg \
           #   --source "https://api.nuget.org/v3/index.json" \
           #   --api-key $NUGET_API_KEY
