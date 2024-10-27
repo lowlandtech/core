@@ -1,7 +1,15 @@
 ﻿namespace LowlandTech.Core.Extensions;
 
+/// <summary>
+/// Extensions for plugins.
+/// </summary>
 public static class PluginExtensions
 {
+    /// <summary>
+    /// Adds a plugin to the service registry.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="plugin"></param>
     public static void AddPlugin(this ServiceRegistry services, IPlugin plugin)
     {
         var pluginId = Guard.Against.MissingPluginId(plugin, nameof(plugin), $"ExtensionPlugin '{plugin.GetType().ShortDisplayName()}' does not provide a plugin id.");
@@ -13,13 +21,22 @@ public static class PluginExtensions
         services.For<IPlugin>().Add(plugin).Named(pluginId);
     }
 
+    /// <summary>
+    /// Adds a plugin to the service registry.
+    /// </summary>
+    /// <typeparam name="T">The plugin</typeparam>
+    /// <param name="services">The service registry</param>
     public static void AddPlugin<T>(this ServiceRegistry services) where T : IPlugin, new()
     {
         var plugin = new T();
-        plugin.Name = plugin.GetType().Name;
+        plugin.Name = plugin.GetType().Namespace!;
         services.AddPlugin(plugin);
     }
 
+    /// <summary>
+    /// Adds plugins to the service registry from the configuration.
+    /// </summary>
+    /// <param name="services">The service registry</param>
     public static void AddPlugins(this ServiceRegistry services)
     {
         var provider = services.BuildServiceProvider();
@@ -83,6 +100,10 @@ public static class PluginExtensions
         }
     }
 
+    /// <summary>
+    /// Use plugins.
+    /// </summary>
+    /// <param name="app">The web application</param>
     public static void UsePlugins(this WebApplication app)
     {
         var container = app.Services.GetRequiredService<IContainer>();

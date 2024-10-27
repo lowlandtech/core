@@ -5,8 +5,7 @@ public class Plugin1 : Plugin
 {
     public Plugin1()
     {
-        Id = new("c66ff6b7-9fed-46e7-aa93-92f3793356d4");
-        Name = "Plugin1";
+        Id = new Guid("c66ff6b7-9fed-46e7-aa93-92f3793356d4");
     }
 
     public override void Install(ServiceRegistry services)

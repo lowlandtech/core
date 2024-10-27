@@ -1,0 +1,45 @@
+name: LowlandTech.Core
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Setup .NET SDK
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.0.x' # Use the latest .NET 8 version
+
+      # Restore dependencies
+      - name: Restore dependencies
+        run: dotnet restore src
+
+      # Build the project
+      - name: Build
+        run: dotnet build src --no-restore --configuration Release
+
+      # Run tests
+      - name: Run Tests
+        run: dotnet test src --no-restore --configuration Release --verbosity normal
+
+      # Publish the package
+      - name: Publish NuGet package
+        if: github.ref == 'refs/heads/main'
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          dotnet pack src --no-restore --no-build --configuration Release -o ./nuget
+          dotnet nuget push ./nuget/*.nupkg https://nuget.pkg.github.com/lowlandtech/index.json --api-key {key}
+          # dotnet nuget push ./nuget/*.nupkg \
+          #   --source "https://api.nuget.org/v3/index.json" \
+          #   --api-key $NUGET_API_KEY

@@ -16,7 +16,7 @@
     <Copyright>Copyright © 2024 LowlandTech</Copyright>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/lowlandtech/core</PackageProjectUrl>
-    <PackageIcon>icon.png</PackageIcon>
+    <PackageIcon>icon.jpg</PackageIcon>
     <!-- Path relative within the NuGet package -->
     <PackageReleaseNotes>Initial release of the package.</PackageReleaseNotes>
 
@@ -40,9 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="icon.png">
+    <None Update="icon.jpg" Pack="true" PackagePath="">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <Pack>true</Pack>
     </None>
   </ItemGroup>
 

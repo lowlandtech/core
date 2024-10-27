@@ -49,6 +49,6 @@ public class PluginExtensionsIntegrationTests(WebApplicationFactory<Program> fac
 
         // Assert
         plugin3.Should().NotBeNull("Plugin3 should be registered and configured.");
-        plugin3?.Name.Should().Be("Plugin3");
+        plugin3?.Name.Should().Be("LowlandTech.Plugin3");
     }
 }

@@ -1,10 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace LowlandTech.Core.Attributes;
 
-namespace Lowlandech.Core.Attributes;
-internal class ContextAttribute
+/// <summary>
+/// Sets the identifier for a context.
+/// </summary>
+/// <param name="id"></param>
+[AttributeUsage(AttributeTargets.Class)]
+public class ContextAttribute(string id) : Attribute
 {
+    /// <summary>
+    /// Gets the context identifier.
+    /// </summary>
+    public Guid ContextId { get; } = new(id);
 }
