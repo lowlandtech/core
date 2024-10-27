@@ -55,7 +55,7 @@ jobs:
       - name: Pack NuGet package
         if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/release/')
         run: |
-          dotnet pack src/lowlandtech.core --no-restore --no-build --configuration Release -o ./nuget /p:PackageVersion=${{ steps.gitversion.outputs.nugetVersion }}
+          dotnet pack src/lowlandtech.core --no-restore --no-build --configuration Release -o ./nuget /p:PackageVersion=${{ steps.gitversion.outputs.NuGetVersion }}
 
       # Publish the NuGet package (for release branches and tags)
       - name: Publish NuGet package
