@@ -1,6 +1,6 @@
-﻿namespace LowlandTech.Core.Tests;
+﻿namespace LowlandTech.Core.Tests.StringExtensionsTests;
 
-public class StringExtensionsTests
+public partial class StringExtensionsTests
 {
     [Fact]
     public void ComputeSha256Hash_ShouldReturnEmptyString_WhenInputIsNull()
