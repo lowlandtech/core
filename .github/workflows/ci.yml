@@ -13,9 +13,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the code
+      # Checkout the code with full history to prevent shallow clone issues
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch the full history to ensure GitVersion works properly
 
       # Setup .NET SDK
       - name: Setup .NET SDK
