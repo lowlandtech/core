@@ -13,9 +13,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      # Checkout the code
+      # Checkout the code with full history to prevent shallow clone issues
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch the full history to ensure GitVersion works properly
 
       # Setup .NET SDK
       - name: Setup .NET SDK
@@ -23,9 +25,17 @@ jobs:
         with:
           dotnet-version: '8.0.x' # Use the latest .NET 8 version
 
-      # Install GitVersion
+      # Install GitVersion as a dotnet global tool
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/execute@v0
+        run: dotnet tool install --global GitVersion.Tool
+
+      # Ensure the GitVersion tool path is in PATH
+      - name: Add GitVersion to PATH
+        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
+
+      # Run GitVersion to determine version
+      - name: Run GitVersion
+        run: dotnet-gitversion /output json /output buildserver
         id: gitversion
 
       # Restore dependencies
