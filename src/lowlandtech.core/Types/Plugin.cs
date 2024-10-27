@@ -13,7 +13,7 @@ public abstract class Plugin : IPlugin
     /// <summary>
     /// Gets the name.
     /// </summary>
-    public required string Name { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
     /// Gets or sets the active state.
