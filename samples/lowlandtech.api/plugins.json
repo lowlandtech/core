@@ -1,0 +1,12 @@
+{
+  "Plugins": [
+    {
+      "Name": "LowlandTech.Plugin1",
+      "IsActive": true
+    },
+    {
+      "Name": "LowlandTech.Plugin2",
+      "IsActive": true
+    }
+  ]
+}

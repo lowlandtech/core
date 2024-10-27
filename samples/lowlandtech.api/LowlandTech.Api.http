@@ -1,0 +1,6 @@
+@LowlandTech.Api_HostAddress = http://localhost:5128
+
+GET {{LowlandTech.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lamar.Microsoft.DependencyInjection" Version="13.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.8" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\lowlandtech.core\LowlandTech.Core.csproj" />
+    <ProjectReference Include="..\plugins\lowlandtech.plugin1\LowlandTech.Plugin1.csproj" />
+    <ProjectReference Include="..\plugins\lowlandtech.plugin2\LowlandTech.Plugin2.csproj" />
+    <ProjectReference Include="..\plugins\lowlandtech.plugin3\LowlandTech.Plugin3.csproj" />
+  </ItemGroup>
+
+</Project>
