@@ -209,15 +209,3 @@ Contributions are welcome! Please follow these steps:
 
 ## License 
 This project is licensed under the MIT License - see the [LICENSE]()  file for details.
-
-### Summary of the `README.md`
-
-- **Overview**: Brief introduction to the plugin system.
-- **Getting Started**: Provides instructions on setting up the project and installing the plugin system.
-- **Creating Plugins**: Walks through creating a plugin by implementing the `IPlugin` interface.
-- **Using Plugins**: Details how to register and use plugins within the application.
-- **Example Project Structure**: Gives an example layout for a project using the plugin system.
-- **Contributing**: Encourages contributions and outlines how to do so.
-- **License**: Mentions the license under which the project is distributed.
-
-This `README.md` should serve as a comprehensive guide for new users to understand how to integrate and use the plugin system in their .NET 8 projects. Adjust the details according to your project as needed.
