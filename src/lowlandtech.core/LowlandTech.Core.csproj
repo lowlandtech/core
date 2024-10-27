@@ -24,6 +24,7 @@
     <IncludeSymbols>true</IncludeSymbols>
     <IncludeSource>true</IncludeSource>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageReadmeFile>readme.md</PackageReadmeFile>
 
     <!-- Ensure the compilation context is preserved for use with test projects -->
     <PreserveCompilationContext>true</PreserveCompilationContext>
@@ -40,7 +41,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="icon.jpg" Pack="true" PackagePath="">
+    <None Include="../../icon.jpg" Pack="true" PackagePath="">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="../../readme.md" Pack="true" PackagePath="">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
