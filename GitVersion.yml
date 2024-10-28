@@ -6,22 +6,21 @@ versioning-mode: ContinuousDeployment
 branches:
   main:
     regex: ^main$
-    increment: None
-    versioning-mode: ContinuousDeployment
+    increment: Patch
   develop:
     regex: ^develop$
-    increment: None
+    increment: Minor
   feature:
     regex: ^feature[/-]
-    increment: None
+    increment: Inherit
     source-branches: ['develop']
   release:
     regex: ^release[/-]
-    increment: None
+    increment: Patch
     source-branches: ['develop', 'main']
   hotfix:
     regex: ^hotfix[/-]
-    increment: None
+    increment: Patch
     source-branches: ['main']
 
 ignore:
@@ -32,5 +31,5 @@ commit-message-incrementing: Disabled
 # Custom date format for the versioning scheme.
 commit-date-format: yyyy.MM.dd.HHmm
 
-# Use a global assembly-informational-format to include time for pre-release builds and omit for main.
+# Custom format for Assembly Informational Version.
 assembly-informational-format: '{Major}.{Minor}.{Patch}{BranchName}-{CommitsSinceVersionSource}-{CommitDate}'
