@@ -2,21 +2,22 @@ next-version: 1.0.0
 mode: ContinuousDeployment
 assembly-versioning-scheme: MajorMinorPatch
 assembly-file-versioning-scheme: MajorMinorPatch
-versioning-mode: ContinuousDeployment
 branches:
   main:
     regex: ^main$
     increment: Patch
+    prevent-increment-of-merged-branch-version: true
   develop:
     regex: ^develop$
     increment: Minor
+    tag: beta
   feature:
     regex: ^feature[/-]
     increment: Inherit
     source-branches: ['develop']
   release:
     regex: ^release[/-]
-    increment: Patch
+    increment: None
     source-branches: ['develop', 'main']
   hotfix:
     regex: ^hotfix[/-]
@@ -25,11 +26,11 @@ branches:
 
 ignore:
   sha: []
-merge-message-formats: {}
+
 commit-message-incrementing: Disabled
 
 # Custom date format for the versioning scheme.
 commit-date-format: yyyy.MM.dd.HHmm
 
-# Custom format for Assembly Informational Version.
+# Customize the version format for informational purposes.
 assembly-informational-format: '{Major}.{Minor}.{Patch}{BranchName}-{CommitsSinceVersionSource}-{CommitDate}'
