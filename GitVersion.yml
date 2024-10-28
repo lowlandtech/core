@@ -1,26 +1,34 @@
 next-version: 1.0.0
 mode: ContinuousDeployment
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatch
 branches:
   main:
     regex: ^main$
-    increment: Patch
+    increment: None
+    tag: ''
+    versioning-mode: ContinuousDeployment
+    format: '{Major}.{Minor}.{Patch}'
   develop:
     regex: ^develop$
-    increment: Minor
-    pre-release-weight: 0
+    increment: None
+    format: '{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}'
   feature:
     regex: ^feature[/-]
-    increment: Inherit
-    source-branches: ['develop']
-    pre-release-weight: 300
+    increment: None
+    format: '{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}'
   release:
     regex: ^release[/-]
     increment: None
-    source-branches: ['develop', 'main']
-    is-release-branch: true
-    pre-release-weight: 200
+    format: '{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}'
   hotfix:
     regex: ^hotfix[/-]
-    increment: Patch
-    source-branches: ['main']
-    pre-release-weight: 100
+    increment: None
+    format: '{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}'
+ignore:
+  sha: []
+merge-message-formats: {}
+commit-message-incrementing: Disabled
+
+# Custom date format for the versioning scheme.
+commit-date-format: yyyy.MM.dd.HHmm
