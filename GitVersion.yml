@@ -2,33 +2,40 @@ next-version: 1.0.0
 mode: ContinuousDeployment
 assembly-versioning-scheme: MajorMinorPatch
 assembly-file-versioning-scheme: MajorMinorPatch
+versioning-mode: ContinuousDeployment
 branches:
   main:
     regex: ^main$
     increment: None
     tag: ''
     versioning-mode: ContinuousDeployment
-    format: '{Major}.{Minor}.{Patch}'
   develop:
     regex: ^develop$
     increment: None
-    format: '{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}'
+    tag: beta
   feature:
     regex: ^feature[/-]
     increment: None
-    format: '{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}'
+    source-branches: ['develop']
+    tag: useBranchName
   release:
     regex: ^release[/-]
     increment: None
-    format: '{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}'
+    source-branches: ['develop', 'main']
+    tag: rc
   hotfix:
     regex: ^hotfix[/-]
     increment: None
-    format: '{Major}.{Minor}.{Patch}.{CommitsSinceVersionSource}'
+    source-branches: ['main']
+    tag: hotfix
+
 ignore:
   sha: []
 merge-message-formats: {}
 commit-message-incrementing: Disabled
 
-# Custom date format for the versioning scheme.
+# Customize the commit date format for versioning.
 commit-date-format: yyyy.MM.dd.HHmm
+
+# Use a global assembly-informational-format to include time for pre-release builds and omit for main.
+assembly-informational-format: '{Major}.{Minor}.{Patch}{BranchName}-{CommitsSinceVersionSource}-{CommitDate}'
