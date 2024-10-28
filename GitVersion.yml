@@ -2,23 +2,25 @@ next-version: 1.0.0
 mode: ContinuousDeployment
 branches:
   main:
-    tag: ''
+    regex: ^main$
     increment: Patch
   develop:
-    tag: beta
+    regex: ^develop$
     increment: Minor
+    pre-release-weight: 0
   feature:
-    tag: useBranchName
+    regex: ^feature[/-]
     increment: Inherit
-    source-branches:
-      - develop
+    source-branches: ['develop']
+    pre-release-weight: 300
   release:
-    tag: rc
+    regex: ^release[/-]
     increment: None
-    source-branches:
-      - develop
+    source-branches: ['develop', 'main']
+    is-release-branch: true
+    pre-release-weight: 200
   hotfix:
-    tag: useBranchName
+    regex: ^hotfix[/-]
     increment: Patch
-    source-branches:
-      - main
+    source-branches: ['main']
+    pre-release-weight: 100

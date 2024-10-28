@@ -18,9 +18,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
+      # Checkout the code with full history to avoid shallow clone issues
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch the entire git history
 
       # Setup .NET 8.0
       - name: Setup .NET 8.0
@@ -30,7 +32,9 @@ jobs:
 
       # Install GitVersion to calculate the version
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/execute@v0.11.2
+        uses: gittools/actions/gitversion/setup@v3.0.0
+        with:
+          versionSpec: '6.x'
         id: gitversion
 
       # Update version in .csproj file with the calculated version from GitVersion
@@ -38,7 +42,7 @@ jobs:
         run: |
           GITVERSION_VERSION=$(echo "${{ steps.gitversion.outputs.semVer }}" | sed 's/-/./g')
           echo "Updating .csproj with version $GITVERSION_VERSION"
-          sed -i "s|<Version>.*</Version>|<Version>${GITVERSION_VERSION}</Version>|g" **/*.csproj
+          sed -i "s|<Version>.*</Version>|<Version>${GITVERSION_VERSION}</Version>|g" src/lowlandtech.core/LowlandTech.Core.csproj
 
       # Restore .NET dependencies
       - name: Restore dependencies
@@ -50,7 +54,7 @@ jobs:
 
       # Pack the project into a NuGet package
       - name: Pack the project
-        run: dotnet pack --no-build --configuration Release -o ./nuget
+        run: dotnet pack src/lowlandtech.core --no-build --configuration Release -o ./nuget
 
       # Publish the NuGet package (only on the main branch)
       - name: Publish NuGet package
