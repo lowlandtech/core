@@ -55,4 +55,9 @@
     </ReadLinesFromFile>
   </Target>
 
+  <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
+    <Exec Command="dotnet pack &quot;$(SolutionDir)src/lowlandtech.core/LowlandTech.Core.csproj&quot; -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmm&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
+  </Target>
+
+
 </Project>
