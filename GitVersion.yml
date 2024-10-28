@@ -1,0 +1,24 @@
+next-version: 1.0.0
+mode: ContinuousDeployment
+branches:
+  main:
+    tag: ''
+    increment: Patch
+  develop:
+    tag: beta
+    increment: Minor
+  feature:
+    tag: useBranchName
+    increment: Inherit
+    source-branches:
+      - develop
+  release:
+    tag: rc
+    increment: None
+    source-branches:
+      - develop
+  hotfix:
+    tag: useBranchName
+    increment: Patch
+    source-branches:
+      - main

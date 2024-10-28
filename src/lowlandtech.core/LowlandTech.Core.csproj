@@ -7,7 +7,6 @@
 
     <!-- NuGet package metadata -->
     <PackageId>LowlandTech.Core</PackageId>
-    <Version>1.0.1</Version>
     <Authors>wendellmva</Authors>
     <Company>LowlandTech</Company>
     <Description>Contains the core functionality for the LowlandTech framework.</Description>
@@ -36,6 +35,10 @@
 
   <ItemGroup>
     <PackageReference Include="Ardalis.GuardClauses" Version="4.6.0" />
+    <PackageReference Include="GitVersion.MsBuild" Version="6.0.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Lamar" Version="13.1.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
   </ItemGroup>
@@ -54,10 +57,5 @@
       <Output TaskParameter="Lines" PropertyName="PackageReleaseNotes" />
     </ReadLinesFromFile>
   </Target>
-
-  <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
-    <Exec Command="dotnet pack &quot;LowlandTech.Core.csproj&quot; -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmm&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
-  </Target>
-
 
 </Project>
