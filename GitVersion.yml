@@ -7,34 +7,29 @@ branches:
   main:
     regex: ^main$
     increment: None
-    tag: ''
     versioning-mode: ContinuousDeployment
   develop:
     regex: ^develop$
     increment: None
-    tag: beta
   feature:
     regex: ^feature[/-]
     increment: None
     source-branches: ['develop']
-    tag: useBranchName
   release:
     regex: ^release[/-]
     increment: None
     source-branches: ['develop', 'main']
-    tag: rc
   hotfix:
     regex: ^hotfix[/-]
     increment: None
     source-branches: ['main']
-    tag: hotfix
 
 ignore:
   sha: []
 merge-message-formats: {}
 commit-message-incrementing: Disabled
 
-# Customize the commit date format for versioning.
+# Custom date format for the versioning scheme.
 commit-date-format: yyyy.MM.dd.HHmm
 
 # Use a global assembly-informational-format to include time for pre-release builds and omit for main.
