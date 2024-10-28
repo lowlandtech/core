@@ -4,29 +4,23 @@ branches:
   main:
     regex: ^main$
     increment: Patch
-    prevent-increment-of-merged-branch-version: true
   develop:
     regex: ^develop$
     increment: Minor
     pre-release-weight: 0
-    prevent-increment-of-merged-branch-version: true
   feature:
     regex: ^feature[/-]
     increment: Inherit
     source-branches: ['develop']
-    tracks-release-branches: false
-    is-release-branch: false
     pre-release-weight: 300
   release:
     regex: ^release[/-]
     increment: None
     source-branches: ['develop', 'main']
-    tracks-release-branches: false
     is-release-branch: true
     pre-release-weight: 200
   hotfix:
     regex: ^hotfix[/-]
     increment: Patch
     source-branches: ['main']
-    tracks-release-branches: false
     pre-release-weight: 100
