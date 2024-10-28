@@ -30,7 +30,9 @@ jobs:
 
       # Install GitVersion to calculate the version
       - name: Install GitVersion
-        uses: gittools/actions/gitversion/execute@v0.11.2
+        uses: gittools/actions/gitversion/setup@v3.0.0
+        with:
+         versionSpec: '6.x'
         id: gitversion
 
       # Update version in .csproj file with the calculated version from GitVersion
