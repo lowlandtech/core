@@ -1,67 +1,61 @@
-name: LowlandTech.Core
+name: LowlandTech.Core Build, Pack, and Publish
 
 on:
   push:
     branches:
-      - develop
       - main
-      - 'release/*'  # Trigger on any release branch like release/1.0.1
-    tags:
-      - '*'  # Trigger on any tag creation
-  workflow_dispatch:
+      - develop
+      - feature/*
+      - release/*
+      - hotfix/*
+  pull_request:
+    branches:
+      - main
+      - develop
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      # Checkout the code with full history to prevent shallow clone issues
+      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # Fetch the full history to ensure GitVersion works properly
 
-      # Setup .NET SDK
-      - name: Setup .NET SDK
+      # Setup .NET 8.0
+      - name: Setup .NET 8.0
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x' # Use the latest .NET 8 version
+          dotnet-version: 8.0.x
 
-      # Install GitVersion as a dotnet global tool
+      # Install GitVersion to calculate the version
       - name: Install GitVersion
-        run: dotnet tool install --global GitVersion.Tool
-
-      # Ensure the GitVersion tool path is in PATH
-      - name: Add GitVersion to PATH
-        run: echo "$HOME/.dotnet/tools" >> $GITHUB_PATH
-
-      # Run GitVersion to determine version
-      - name: Run GitVersion
-        run: dotnet-gitversion /output json /output buildserver
+        uses: gittools/actions/gitversion/execute@v0.11.2
         id: gitversion
 
-      # Restore dependencies
+      # Update version in .csproj file with the calculated version from GitVersion
+      - name: Update version in .csproj
+        run: |
+          GITVERSION_VERSION=$(echo "${{ steps.gitversion.outputs.semVer }}" | sed 's/-/./g')
+          echo "Updating .csproj with version $GITVERSION_VERSION"
+          sed -i "s|<Version>.*</Version>|<Version>${GITVERSION_VERSION}</Version>|g" **/*.csproj
+
+      # Restore .NET dependencies
       - name: Restore dependencies
-        run: dotnet restore src/lowlandtech.core
+        run: dotnet restore
 
-      # Build the project
-      - name: Build
-        run: dotnet build src/lowlandtech.core --no-restore --configuration Release
+      # Build the .NET project
+      - name: Build project
+        run: dotnet build --no-restore --configuration Release
 
-      # Run tests
-      - name: Run Tests
-        run: dotnet test src/lowlandtech.core --no-restore --configuration Release --verbosity normal
-
-      # Pack the NuGet package (for release branches and tags)
-      # - name: Pack NuGet package
-      #   if: startsWith(github.ref, 'refs/tags/') || startsWith(github.ref, 'refs/heads/release/')
-      #   run: |
-      #     dotnet pack src/lowlandtech.core --no-restore --no-build --configuration Release -o ./nuget
+      # Pack the project into a NuGet package
+      - name: Pack the project
+        run: dotnet pack --no-build --configuration Release -o ./nuget
 
       # Publish the NuGet package (only on the main branch)
       - name: Publish NuGet package
         if: github.ref == 'refs/heads/main'
         env:
-         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-         dotnet pack src/lowlandtech.core --no-restore --no-build --configuration Release -o ./nuget
-         dotnet nuget push ./nuget/*.nupkg --source https://nuget.pkg.github.com/lowlandtech/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
+          dotnet nuget push ./nuget/*.nupkg --source https://nuget.pkg.github.com/lowlandtech/index.json --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
