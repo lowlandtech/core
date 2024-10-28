@@ -8,7 +8,7 @@
     <!-- NuGet package metadata -->
     <PackageId>LowlandTech.Core</PackageId>
     <Version>1.0.1</Version>
-    <Authors>@wendelmva</Authors>
+    <Authors>wendellmva</Authors>
     <Company>LowlandTech</Company>
     <Description>Contains the core functionality for the LowlandTech framework.</Description>
     <PackageTags>dotnet; nuget; lowlandtech; core</PackageTags>
@@ -54,5 +54,10 @@
       <Output TaskParameter="Lines" PropertyName="PackageReleaseNotes" />
     </ReadLinesFromFile>
   </Target>
+
+  <Target Name="NugetPackAutoVersioning" AfterTargets="Build">
+    <Exec Command="dotnet pack &quot;$(SolutionDir)src/lowlandtech.core/LowlandTech.Core.csproj&quot; -p:PackageVersion=$([System.DateTime]::Now.ToString(&quot;yyyy.MM.dd.HHmm&quot;)) --no-build --configuration $(Configuration) --output &quot;$(SolutionDir)nuget&quot;" />
+  </Target>
+
 
 </Project>
