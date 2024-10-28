@@ -18,9 +18,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the code
+      # Checkout the code with full history to avoid shallow clone issues
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch the entire git history
 
       # Setup .NET 8.0
       - name: Setup .NET 8.0
@@ -32,7 +34,7 @@ jobs:
       - name: Install GitVersion
         uses: gittools/actions/gitversion/setup@v3.0.0
         with:
-         versionSpec: '6.x'
+          versionSpec: '6.x'
         id: gitversion
 
       # Update version in .csproj file with the calculated version from GitVersion
