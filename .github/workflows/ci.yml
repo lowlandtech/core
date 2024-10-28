@@ -40,7 +40,7 @@ jobs:
         run: |
           GITVERSION_VERSION=$(echo "${{ steps.gitversion.outputs.semVer }}" | sed 's/-/./g')
           echo "Updating .csproj with version $GITVERSION_VERSION"
-          sed -i "s|<Version>.*</Version>|<Version>${GITVERSION_VERSION}</Version>|g" **/*.csproj
+          sed -i "s|<Version>.*</Version>|<Version>${GITVERSION_VERSION}</Version>|g" src/lowlandtech.core/LowlandTech.Core.csproj
 
       # Restore .NET dependencies
       - name: Restore dependencies
