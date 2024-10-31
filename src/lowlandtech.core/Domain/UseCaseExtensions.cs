@@ -26,10 +26,8 @@ public static class UseCaseExtensions
     /// </summary>
     /// <param name="context">The DbContext</param>
     /// <typeparam name="T">The use-case.</typeparam>
-    /// <typeparam name="TContext">The DbContext.</typeparam>
-    public static async Task Use<T, TContext>(this TContext context)
+    public static async Task Use<T>(this DbContext context)
         where T : class, IUseCase
-        where TContext : DbContext
     {
         var instance = (T)Activator.CreateInstance(typeof(T), [context])!;
         await instance.SeedAsync();

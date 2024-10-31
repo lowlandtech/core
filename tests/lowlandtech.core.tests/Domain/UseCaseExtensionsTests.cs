@@ -33,7 +33,7 @@ public class UseCaseExtensionsTests
         await using var context = new Plugin1Context(options);
 
         // Act: Use the UseCaseExtensions to seed data directly with DbContext
-        await context.Use<Plugin1UseCase, Plugin1Context>();
+        await context.Use<Plugin1UseCase>();
 
         // Assert: Verify that data was seeded
         var entityCount = await context.Entities.CountAsync();

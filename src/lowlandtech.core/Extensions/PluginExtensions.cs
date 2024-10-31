@@ -43,6 +43,11 @@ public static class PluginExtensions
         var factory = provider.GetRequiredService<ILoggerFactory>();
         var logger = factory.CreateLogger("LowlandTech.Core.Extensions");
         var configuration = provider.GetRequiredService<IConfiguration>();
+
+        // then configure data context options;
+        services.Configure<ProviderOptions>(configuration
+                .GetSection(ProviderOptions.ProviderContext));
+
         var options = new PluginOptions
         {
             Plugins = configuration

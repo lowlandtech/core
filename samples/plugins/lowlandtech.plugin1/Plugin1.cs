@@ -10,16 +10,6 @@ public class Plugin1 : Plugin
 
     public override void Install(ServiceRegistry services)
     {
-        // then resolve configuration;
-        var configuration = services
-            .BuildServiceProvider()
-            .GetRequiredService<IConfiguration>();
-
-        // then configure data context options;
-        services
-            .Configure<ProviderOptions>(configuration
-                .GetSection(ProviderOptions.ProviderContext));
-
         // then add data context;
         services.AddProvider<Plugin1Context>();
         // then add entity triggers;
@@ -29,13 +19,16 @@ public class Plugin1 : Plugin
 
     public override async void Configure(WebApplication app)
     {
+        // then apply migrations to context;
+        await app.UseMigration<Plugin1Context>();
+        // then create a scope from the service builder;
         using var scope = app.Services.CreateScope();
         // then get context;
         var factory = scope.ServiceProvider
             .GetRequiredService<IDbContextFactory<Plugin1Context>>();
-        // then apply migrations to context;
-        await app.UseMigration<Plugin1Context>();
+        // then resolve a context;
+        await using var context = await factory.CreateDbContextAsync();
         // then seed data use-cases;
-        await factory.Use<Plugin1UseCase, Plugin1Context>();
+        await context.Use<Plugin1UseCase>();
     }
 }

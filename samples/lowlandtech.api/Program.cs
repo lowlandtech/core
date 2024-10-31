@@ -37,4 +37,3 @@ app.MapGet("/plugins", () =>
 
 app.Run();
 public partial class Program { }
-

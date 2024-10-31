@@ -28,6 +28,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{7AEBEB18
 		.github\workflows\ci.yml = .github\workflows\ci.yml
 		changelog.md = changelog.md
 		GitVersion.yml = GitVersion.yml
+		license.md = license.md
 		readme.md = readme.md
 	EndProjectSection
 EndProject
