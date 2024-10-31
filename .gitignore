@@ -482,3 +482,5 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+.NCrunch_lowlandtech.core/StoredText/
