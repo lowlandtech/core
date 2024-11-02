@@ -10,5 +10,5 @@ public class PluginId(string id) : Attribute
     /// <summary>
     /// Gets the identifier.
     /// </summary>
-    public string Id { get; } = id;
+    public string Id => id;
 }

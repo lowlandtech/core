@@ -1,5 +1,6 @@
 // Global using directives
 
+global using System.Linq.Dynamic.Core;
 global using System.Reflection;
 global using System.Runtime.Loader;
 global using System.Security.Cryptography;

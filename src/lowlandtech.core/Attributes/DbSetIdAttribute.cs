@@ -5,10 +5,10 @@
 /// </summary>
 /// <param name="id"></param>
 [AttributeUsage(AttributeTargets.Property)]
-public class EntityAttribute(string id) : Attribute
+public class DbSetIdAttribute(string id) : Attribute
 {
     /// <summary>
     /// Gets the entity identifier.
     /// </summary>
-    public Guid EntityId { get; } = new(id);
+    public string Id => id;
 }

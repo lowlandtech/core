@@ -13,8 +13,8 @@ public class Plugin3 : Plugin
 
     }
 
-    public override void Configure(WebApplication app)
+    public override Task Configure(WebApplication app)
     {
-
+        return Task.CompletedTask;
     }
 }
