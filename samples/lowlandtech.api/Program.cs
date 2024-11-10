@@ -12,7 +12,8 @@ builder.Host.UseLamar((context, services) =>
     // Load plugins from file
     services.AddPlugins();
     // Register specific plugin
-    services.AddPlugin<Plugin3>(); 
+    services.AddPlugin<Plugin3>();
+    services.For<EntityService>().Use<EntityService>();
 });
 
 var app = builder.Build();

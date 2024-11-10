@@ -15,8 +15,9 @@ public class TestPlugin : Plugin
         // Mocked installation logic
     }
 
-    public override void Configure(WebApplication app)
+    public override Task Configure(WebApplication app)
     {
         // Mocked configuration logic
+        return Task.CompletedTask;
     }
 }

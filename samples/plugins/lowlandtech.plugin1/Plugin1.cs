@@ -17,7 +17,7 @@ public class Plugin1 : Plugin
         services.AddTransient<IAfterSaveTrigger<Plugin1Entity>, Plugin1EntitySaved>();
     }
 
-    public override async void Configure(WebApplication app)
+    public override async Task Configure(WebApplication app)
     {
         // then apply migrations to context;
         await app.UseMigration<Plugin1Context>();
