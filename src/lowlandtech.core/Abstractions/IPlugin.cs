@@ -65,5 +65,5 @@ public interface IPlugin
     /// Configures the plugin.
     /// </summary>
     /// <param name="app"></param>
-    void Configure(WebApplication app);
+    Task Configure(WebApplication app);
 }

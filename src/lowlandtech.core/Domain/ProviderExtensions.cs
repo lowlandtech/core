@@ -1,4 +1,6 @@
-﻿namespace LowlandTech.Core.Domain;
+﻿using Microsoft.EntityFrameworkCore.Internal;
+
+namespace LowlandTech.Core.Domain;
 
 /// <summary>
 /// Provider extensions.
@@ -11,7 +13,7 @@ public static class ProviderExtensions
     /// <typeparam name="TContext"></typeparam>
     /// <param name="services"></param>
     /// <param name="prefix"></param>
-    public static void AddProvider<TContext>(this IServiceCollection services, string? prefix = null)
+    public static void AddProvider<TContext>(this ServiceRegistry services, string? prefix = null)
         where TContext : DbContext
     {
         var serviceProvider = services
@@ -34,46 +36,51 @@ public static class ProviderExtensions
 
         var migration = prefix ?? $"{providerOptions.Prefix}.{providerOptions.Provider}";
 
-        services.AddDbContextFactory<TContext>(options =>
+        var builder = new DbContextOptionsBuilder<TContext>();
+
+        builder.ConfigureWarnings(b =>
+            b.Ignore(CoreEventId.DetachedLazyLoadingWarning));
+
+        if (providerOptions.UseProxies)
         {
-            options.ConfigureWarnings(b =>
-                b.Ignore(CoreEventId.DetachedLazyLoadingWarning));
+            builder.UseLazyLoadingProxies();
+        }
 
-            if (providerOptions.UseProxies)
-            {
-                options.UseLazyLoadingProxies();
-            }
+        if (providerOptions.UseSensitiveDataLogging)
+        {
+            builder.EnableSensitiveDataLogging();
+        }
 
-            if (providerOptions.UseSensitiveDataLogging)
-            {
-                options.EnableSensitiveDataLogging();
-            }
+        if (providerOptions.UseTriggers)
+        {
+            builder.UseTriggers();
+        }
 
-            if (providerOptions.UseTriggers)
-            {
-                options.UseTriggers();
-            }
+        switch (providerOptions.Provider)
+        {
+            case Providers.Sqlite:
+                builder.UseSqlite(cs, builder =>
+                    builder.MigrationsAssembly(migration));
+                break;
+            case Providers.PgSql:
+                builder.UseNpgsql(cs, builder =>
+                    builder.MigrationsAssembly(migration));
+                break;
+            case Providers.SqlServer:
+                builder.UseSqlServer(cs, builder =>
+                    builder.MigrationsAssembly(migration));
+                break;
+            default:
+                builder.UseInMemoryDatabase(cs);
+                break;
+        }
 
-            switch (providerOptions.Provider)
-            {
-                case Providers.Sqlite:
-                    options.UseSqlite(cs, builder =>
-                        builder.MigrationsAssembly(migration));
-                    break;
-                case Providers.PgSql:
-                    options.UseNpgsql(cs, builder =>
-                        builder.MigrationsAssembly(migration));
-                    break;
-                case Providers.SqlServer:
-                    options.UseSqlServer(cs, builder =>
-                        builder.MigrationsAssembly(migration));
-                    break;
-                default:
-                    options.UseInMemoryDatabase(cs);
-                    break;
-            }
-        });
-
+        // Register the factories with unique names
+        services.For<DbContextOptions<TContext>>().Use(ctx => builder.Options);
+        services.For<IDbContextFactory<TContext>>()
+            .Use<PooledDbContextFactory<TContext>>();
+        services.For<TContext>()
+            .Use<TContext>();
     }
 
     /// <summary>

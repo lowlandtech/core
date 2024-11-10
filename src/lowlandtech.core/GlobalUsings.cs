@@ -1,5 +1,6 @@
 // Global using directives
 
+global using System.Linq.Dynamic.Core;
 global using System.Reflection;
 global using System.Runtime.Loader;
 global using System.Security.Cryptography;
@@ -14,6 +15,7 @@ global using LowlandTech.Core.Domain.Types;
 global using LowlandTech.Core.Extensions;
 global using LowlandTech.Core.Types;
 global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Components;
 global using Microsoft.AspNetCore.Hosting;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.EntityFrameworkCore.Diagnostics;

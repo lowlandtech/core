@@ -66,5 +66,5 @@ public abstract class Plugin : IPlugin
     /// Configures the plugin.
     /// </summary>
     /// <param name="app"></param>
-    public abstract void Configure(WebApplication app);
+    public abstract Task Configure(WebApplication app);
 }

@@ -196,7 +196,7 @@ public class Plugin1UseCase : IUseCase
 ```
 
 ### Executing a Use Case 
-To execute a use case, call `Use<TUseCase, TContext>`:
+To execute a use case, call `Use<TUseCase>`:
 
 ```csharp
 using var scope = app.Services.CreateScope();
