@@ -26,8 +26,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "files", "files", "{7AEBEB18-6F04-4A5D-BCE7-DFF881C287C2}"
 	ProjectSection(SolutionItems) = preProject
 		changelog.md = changelog.md
-		.github\workflows\ci.yml = .github\workflows\ci.yml
 		license.md = license.md
+		.github\workflows\main.yml = .github\workflows\main.yml
 		readme.md = readme.md
 	EndProjectSection
 EndProject
