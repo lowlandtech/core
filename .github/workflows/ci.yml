@@ -30,20 +30,6 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      # Install GitVersion to calculate the version
-      - name: Install GitVersion
-        uses: gittools/actions/gitversion/setup@v3.0.0
-        with:
-          versionSpec: '6.x'
-        id: gitversion
-
-      # Update version in .csproj file with the calculated version from GitVersion
-      - name: Update version in .csproj
-        run: |
-          GITVERSION_VERSION=$(echo "${{ steps.gitversion.outputs.semVer }}" | sed 's/-/./g')
-          echo "Updating .csproj with version $GITVERSION_VERSION"
-          sed -i "s|<Version>.*</Version>|<Version>${GITVERSION_VERSION}</Version>|g" src/lowlandtech.core/LowlandTech.Core.csproj
-
       # Restore .NET dependencies
       - name: Restore dependencies
         run: dotnet restore
@@ -54,7 +40,7 @@ jobs:
 
       # Pack the project into a NuGet package
       - name: Pack the project
-        run: dotnet pack src/lowlandtech.core --no-build --configuration Release -o ./nuget
+        run: dotnet pack src/lowlandtech.core /p:PackageVersion=2024.12.1 --no-build --configuration Release -o ./nuget
 
       # Publish the NuGet package (only on the main branch)
       - name: Publish NuGet package
