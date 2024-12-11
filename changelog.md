@@ -1,4 +1,7 @@
 # Changelog
+## 2024.12.1
+
+- **Added** PropertyTypes to the `Property` class to allow for more complex property types.
 
 ## 2024-10-31
 
