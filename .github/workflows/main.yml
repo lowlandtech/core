@@ -38,9 +38,9 @@ jobs:
       - name: Build project
         run: dotnet build --no-restore --configuration Release
 
-      # Pack the project into a NuGet package
-      - name: Pack the project
-        run: dotnet pack src/lowlandtech.core /p:PackageVersion=2024.12.1 --no-build --configuration Release -o ./nuget
+      # Pack the project into core a NuGet package
+      - name: Pack the project core
+        run: dotnet pack src/lowlandtech.core  /p:PackageVersion=2024.12.2 --no-build --configuration Release -o ./nuget
 
       # Publish the NuGet package (only on the main branch)
       - name: Publish NuGet package
