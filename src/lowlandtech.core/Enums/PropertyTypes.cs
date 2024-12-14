@@ -46,6 +46,21 @@ public enum PropertyTypes
     Guid = 7,
 
     /// <summary>
+    /// Gets the binary as property type.
+    /// </summary>
+    Binary = 8,
+
+    /// <summary>
+    /// Gets the collection as property type.
+    /// </summary>
+    Collection = 9,
+
+    /// <summary>
+    /// Gets the object as property type.
+    /// </summary>
+    Object = 10,
+
+    /// <summary>
     /// Gets the style class as property type.
     /// </summary>
     StyleClass = 20,
