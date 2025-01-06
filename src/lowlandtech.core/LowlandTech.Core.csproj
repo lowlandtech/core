@@ -7,7 +7,7 @@
 
     <!-- NuGet package metadata -->
     <PackageId>LowlandTech.Core</PackageId>
-    <Version>2024.12.3</Version>
+    <Version>2025.1.6</Version>
     <Authors>wendellmva</Authors>
     <Company>LowlandTech</Company>
     <Description>Contains the core functionality for the LowlandTech framework.</Description>
