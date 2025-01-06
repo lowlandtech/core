@@ -40,7 +40,7 @@ jobs:
 
       # Pack the project into core a NuGet package
       - name: Pack the project core
-        run: dotnet pack src/lowlandtech.core  /p:PackageVersion=2024.12.3 --no-build --configuration Release -o ./nuget
+        run: dotnet pack src/lowlandtech.core  /p:PackageVersion=2025.1.6 --no-build --configuration Release -o ./nuget
 
       # Publish the NuGet package (only on the main branch)
       - name: Publish NuGet package
