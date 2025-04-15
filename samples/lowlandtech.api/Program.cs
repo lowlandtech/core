@@ -1,3 +1,5 @@
+using Lamar;
+
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("plugins.json", optional: false, reloadOnChange: true);
 StaticWebAssetsLoader.UseStaticWebAssets(builder.Environment, builder.Configuration);
@@ -17,7 +19,9 @@ builder.Host.UseLamar((context, services) =>
 });
 
 var app = builder.Build();
-app.UsePlugins(); // Configure plugins
+var scope = app.Services.CreateScope();
+var container = scope.ServiceProvider.GetRequiredService<IContainer>();
+container.UsePlugins(); // Configure plugins
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -29,7 +33,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapGet("/plugins", () =>
 {
-    var scope = app.Services.CreateScope();
     var plugins = scope.ServiceProvider.GetServices<IPlugin>(); ;
     return plugins;
 })

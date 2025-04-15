@@ -17,12 +17,12 @@ public class Plugin1 : Plugin
         services.AddTransient<IAfterSaveTrigger<Plugin1Entity>, Plugin1EntitySaved>();
     }
 
-    public override async Task Configure(WebApplication app)
+    public override async Task Configure(IContainer container)
     {
         // then apply migrations to context;
-        await app.UseMigration<Plugin1Context>();
+        await container.UseMigration<Plugin1Context>();
         // then create a scope from the service builder;
-        using var scope = app.Services.CreateScope();
+        using var scope = container.CreateScope();
         // then get context;
         var factory = scope.ServiceProvider
             .GetRequiredService<IDbContextFactory<Plugin1Context>>();

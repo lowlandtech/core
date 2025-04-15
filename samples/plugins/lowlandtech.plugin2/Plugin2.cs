@@ -25,17 +25,17 @@ public class Plugin2 : Plugin
             .Named(id);
     }
 
-    public override async Task Configure(WebApplication app)
+    public override async Task Configure(IContainer container)
     {
         // then create a scope from the service builder;
-        using var scope = app.Services.CreateScope();
+        using var scope = container.CreateScope();
         // then get context;
         var factory = scope.ServiceProvider
             .GetRequiredService<IDbContextFactory<Plugin2Context>>();
         // then resolve a context;
         await using var context = await factory.CreateDbContextAsync();
         // then apply migrations to context;
-        await app.UseMigration<Plugin2Context>();
+        await container.UseMigration<Plugin2Context>();
         // then seed data use-cases;
         await context.Use<Plugin2UseCase>();
     }

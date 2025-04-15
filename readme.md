@@ -97,7 +97,7 @@ public class Plugin1 : Plugin
         services.AddTransient<IAfterSaveTrigger<Plugin1Entity>, Plugin1EntitySaved>();
     }
 
-    public override async void Configure(WebApplication app)
+    public override async void Configure(IContainer container)
     {
         using var scope = app.Services.CreateScope();
 
@@ -166,7 +166,7 @@ public override void Install(ServiceRegistry services)
 Use the `UseMigration` extension method in the `Configure` method of a plugin to apply migrations to the associated `DbContext`.
 
 ```csharp
-public override async void Configure(WebApplication app)
+public override async void Configure(IContainer container)
 {
     await app.UseMigration<Plugin1Context>(); // Apply migrations
 }

@@ -8,6 +8,5 @@ global using LowlandTech.Core.Types;
 global using LowlandTech.Plugin2.Domain;
 global using LowlandTech.Plugin2.Domain.Entities;
 global using LowlandTech.Plugin2.Domain.UseCases;
-global using Microsoft.AspNetCore.Builder;
 global using Microsoft.EntityFrameworkCore;
 global using Microsoft.Extensions.DependencyInjection;

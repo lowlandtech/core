@@ -64,6 +64,6 @@ public interface IPlugin
     /// <summary>
     /// Configures the plugin.
     /// </summary>
-    /// <param name="app"></param>
-    Task Configure(WebApplication app);
+    /// <param name="container">The ioc container.</param>
+    Task Configure(IContainer container);
 }
