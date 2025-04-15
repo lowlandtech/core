@@ -24,11 +24,11 @@ jobs:
         with:
           fetch-depth: 0  # Fetch the entire git history
 
-      # Setup .NET 8.0
-      - name: Setup .NET 8.0
+      # Setup .NET 9.0
+      - name: Setup .NET 9.0
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 9.0.x
 
       # Restore .NET dependencies
       - name: Restore dependencies
@@ -40,7 +40,7 @@ jobs:
 
       # Pack the project into core a NuGet package
       - name: Pack the project core
-        run: dotnet pack src/lowlandtech.core  /p:PackageVersion=2025.4.0 --no-build --configuration Release -o ./nuget
+        run: dotnet pack src/lowlandtech.core /p:PackageVersion=2025.4.0 --no-build --configuration Release -o ./nuget
 
       # Publish the NuGet package (only on the main branch)
       - name: Publish NuGet package
