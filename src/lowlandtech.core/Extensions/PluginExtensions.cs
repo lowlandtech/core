@@ -44,9 +44,9 @@ public static class PluginExtensions
         var logger = factory.CreateLogger("LowlandTech.Core.Extensions");
         var configuration = provider.GetRequiredService<IConfiguration>();
 
-        // then configure data context options;
-        services.Configure<ProviderOptions>(configuration
-                .GetSection(ProviderOptions.ProviderContext));
+        // Bind ProviderOptions
+        var providerOptions = new ProviderOptions();
+        configuration.GetSection(ProviderOptions.ProviderContext).Bind(providerOptions);
 
         var options = new PluginOptions
         {
@@ -108,15 +108,14 @@ public static class PluginExtensions
     /// <summary>
     /// Use plugins.
     /// </summary>
-    /// <param name="app">The web application</param>
-    public static void UsePlugins(this WebApplication app)
+    /// <param name="container">The ioc container</param>
+    public static void UsePlugins(this IContainer container)
     {
-        var container = app.Services.GetRequiredService<IContainer>();
         var plugins = container.GetAllInstances<IPlugin>();
         // and configure plugins;
         foreach (var plugin in plugins)
         {
-            plugin.Configure(app);
+            plugin.Configure(container);
         }
     }
 }

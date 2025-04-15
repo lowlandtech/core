@@ -65,6 +65,6 @@ public abstract class Plugin : IPlugin
     /// <summary>
     /// Configures the plugin.
     /// </summary>
-    /// <param name="app"></param>
-    public abstract Task Configure(WebApplication app);
+    /// <param name="container"></param>
+    public abstract Task Configure(IContainer container);
 }

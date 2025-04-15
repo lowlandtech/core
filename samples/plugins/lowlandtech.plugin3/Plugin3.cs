@@ -13,7 +13,7 @@ public class Plugin3 : Plugin
 
     }
 
-    public override Task Configure(WebApplication app)
+    public override Task Configure(IContainer container)
     {
         return Task.CompletedTask;
     }

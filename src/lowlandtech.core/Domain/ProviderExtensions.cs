@@ -86,12 +86,12 @@ public static class ProviderExtensions
     /// <summary>
     /// Manages the migration of the database.
     /// </summary>
-    /// <param name="app"></param>
+    /// <param name="container"></param>
     /// <typeparam name="TContext"></typeparam>
-    public static async Task UseMigration<TContext>(this WebApplication app)
+    public static async Task UseMigration<TContext>(this IContainer container)
         where TContext : DbContext
     {
-        using var scope = app.Services.CreateScope();
+        using var scope = container.CreateScope();
         var serviceProvider = scope.ServiceProvider;
 
         var factory = serviceProvider
@@ -112,16 +112,6 @@ public static class ProviderExtensions
             //if (context.Database.HasPendingModelChanges())
             await context.Database.MigrateAsync();
         }
-    }
-
-    /// <summary>
-    /// Checks if the environment is a test environment.
-    /// </summary>
-    /// <param name="env">The web host environment</param>
-    /// <returns>True or false</returns>
-    public static bool IsTest(this IWebHostEnvironment env)
-    {
-        return env.EnvironmentName == "Test";
     }
 
     /// <summary>
