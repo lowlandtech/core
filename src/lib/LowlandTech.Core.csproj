@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>LowlandTech.Core</RootNamespace>
+    <AssemblyName>LowlandTech.Core</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <PackageId>LowlandTech.Core</PackageId>
+    <Version>2026.5.29</Version>
+    <Authors>LowlandTech</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <Description>Core contracts, plugin system, graph types, and domain abstractions for the Foundry platform.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="artifacts\**" />
+    <Compile Remove="output\**" />
+    <EmbeddedResource Remove="artifacts\**" />
+    <EmbeddedResource Remove="output\**" />
+    <None Remove="artifacts\**" />
+    <None Remove="output\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="LowlandTech.Core.csproj.lscache" />
+    <None Remove="LowlandTech.Core.v3.ncrunchproject" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.9" />
+    <PackageReference Include="NBitcoin" Version="10.0.4" />
+    <PackageReference Include="NCalcAsync" Version="6.3.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\components\core\LowlandTech.Components.Core.csproj" />
+  </ItemGroup>
+
+</Project>
