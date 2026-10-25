@@ -1,0 +1,14 @@
+{
+  "version": "2026.10.3-20261025011050827978557",
+  "sourceCommit": "43c4c711af9aa149fb42e85f864cabfa61f878c6",
+  "componentsCoreVersion": "2026.10.1-20261024235136415",
+  "packageSha256": "c6d0497a4321a7569ff289173496312b8a4484dfd21abdd6269acdf5085da999",
+  "isolatedConsumer": "Clean temporary directory outside source checkouts; empty package cache",
+  "published": true,
+  "buildWarnings": 0,
+  "buildErrors": 0,
+  "testsPassed": 4,
+  "testsSkipped": 0,
+  "importedLibraryFilesUnchanged": 400,
+  "publicSourcePush": "Awaiting explicit private-to-public source approval"
+}

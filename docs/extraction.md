@@ -46,3 +46,19 @@ no bundled duplicate assembly; a clean external consumer restores into an
 empty cache, compiles with zero warnings/errors and runs the graph registry
 and ComponentsStartupMap from the actual package. This preflight did not
 publish a package; final immutable version/evidence follows after checkpoint.
+
+## Verified local package
+
+Published immutably to the shared local feed:
+LowlandTech.Core 2026.10.3-20261025011050827978557 from source 43c4c711af9aa149fb42e85f864cabfa61f878c6.
+Package SHA256: c6d0497a4321a7569ff289173496312b8a4484dfd21abdd6269acdf5085da999.
+Exact Components.Core dependency: [2026.10.1-20261024235136415].
+Final build and isolated consumer build have zero warnings/errors; four tests
+pass with zero skips. The consumer restores into an empty cache and runs the
+graph registry and ComponentsStartupMap from package references only.
+Structured evidence: verification.json. All 400 imported library files match
+the recorded source; only project wiring was adapted.
+
+Public GitHub source push is pending explicit private-to-public approval after
+automatic review rejected the first attempt. Nothing was pushed to Core.
+The filtered private history remains local and excluded from branch ancestry.

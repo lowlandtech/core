@@ -7,7 +7,7 @@ and later consumer migration are separate outcomes.
 
 | Work | Title | Owner | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| M1-001 | [Standalone source and verified package producer](../../README.md) | core | None | review |
+| M1-001 | [Standalone source and verified package producer](../../README.md) | core | None | review (public push pending) |
 | M2-001 | [Retire legacy producer and coordinate consumer cutover](../extraction.md) | core | M1-001 | blocked |
 | M2-X01 | [Components exact batch repack and shared-feed consumer](../../../components/docs/evidence/dependency-closure-repair.md) | components | Verified new Core package | blocked (external) |
 | M2-X02 | Builder re-vendor and Coder package adoption | builder/coder | Verified producer/Components closure | blocked (external) |
