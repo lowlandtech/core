@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <Version>2026.10.3</Version>
+    <Authors>LowlandTech</Authors>
+    <Company>LowlandTech</Company>
+    <RepositoryUrl>https://github.com/lowlandtech/core</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <GenerateEmbeddedValidatableTypeAttribute>false</GenerateEmbeddedValidatableTypeAttribute>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+</Project>

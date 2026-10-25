@@ -8,15 +8,16 @@
     <AssemblyName>LowlandTech.Core</AssemblyName>
     <IsPackable>true</IsPackable>
     <PackageId>LowlandTech.Core</PackageId>
-    <Version>2026.5.29</Version>
     <Authors>LowlandTech</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
     <Description>Core contracts, plugin system, graph types, and domain abstractions for the Foundry platform.</Description>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
+    <None Include="../../README.md" Pack="true" PackagePath="/" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,7 +45,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\components\core\LowlandTech.Components.Core.csproj" />
+    <PackageReference Include="LowlandTech.Components.Core" Version="[2026.10.1-20261024235136415]" />
   </ItemGroup>
 
 </Project>
