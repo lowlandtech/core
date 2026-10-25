@@ -59,6 +59,20 @@ graph registry and ComponentsStartupMap from package references only.
 Structured evidence: verification.json. All 400 imported library files match
 the recorded source; only project wiring was adapted.
 
-Public GitHub source push is pending explicit private-to-public approval after
-automatic review rejected the first attempt. Nothing was pushed to Core.
+The user explicitly approved this private-to-public snapshot transfer after
+automatic review initially required that clarification. The reviewed snapshot
+is now pushed to public origin/develop at 1c6172c.
 The filtered private history remains local and excluded from branch ancestry.
+
+## Legacy producer retirement
+
+Local Foundry checkpoint 134299084 preserves source build compatibility and
+blocks duplicate Core packaging. Draft review:
+https://github.com/lowlandtech/foundry/pull/185 (commit 04de740).
+That branch contains only the three retirement paths on the GitHub develop
+base; the eight unrelated unpublished local commits were not pushed. The
+retirement is effective locally; remote retirement awaits review/merge.
+
+Components can now perform its exact batch repack against the verified Core
+version above; Builder and Coder retain their own consumer adoption gates.
+No sixth worker, public NuGet release or application deployment was created.

@@ -10,5 +10,11 @@
   "testsPassed": 4,
   "testsSkipped": 0,
   "importedLibraryFilesUnchanged": 400,
-  "publicSourcePush": "Awaiting explicit private-to-public source approval"
+  "publicSourcePush": "Approved explicitly by user; snapshot pushed to origin/develop at 1c6172c",
+  "legacyProducerRetirement": {
+    "localCheckpoint": "134299084",
+    "reviewCommit": "04de74099d2a0273d0bb9543dec945a26064b5f8",
+    "draftPullRequest": "https://github.com/lowlandtech/foundry/pull/185",
+    "mergeStatus": "pending review"
+  }
 }
