@@ -16,5 +16,6 @@
         "artifacts",
         "**/bin",
         "**/obj"
-    ]
+    ],
+    "window.title": "CORE"
 }
