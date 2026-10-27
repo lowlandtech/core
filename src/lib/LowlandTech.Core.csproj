@@ -49,7 +49,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="LowlandTech.Components.Core" Version="[2026.10.1-20261027132304836209585]" />
+    <PackageReference Include="LowlandTech.Components.Core" Version="[2026.10.1-20261027141438913274721]" />
   </ItemGroup>
 
 </Project>
