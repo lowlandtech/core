@@ -328,8 +328,7 @@ public sealed class GitFlowClientContractAcceptanceTests
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? string.Empty;
         var plus = informational.IndexOf('+', StringComparison.Ordinal);
         var version = plus < 0 ? informational : informational[..plus];
-        var dash = version.LastIndexOf('-');
-        return dash < 0 ? null : version;
+        return version.Length == 0 ? null : version;
     }
 
     /// <summary>The public type names of an assembly.</summary>
