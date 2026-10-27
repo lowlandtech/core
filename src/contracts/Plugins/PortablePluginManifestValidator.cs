@@ -665,18 +665,21 @@ public static class PortablePluginManifestWriter
             }
             writer.WriteEndArray();
             writer.WritePropertyName("contributions");
-            WriteContributions(writer, manifest.Contributions);
-            writer.WritePropertyName("assets");
-            writer.WriteStartObject();
-            writer.WritePropertyName("stylesheets");
-            writer.WriteStartArray();
-            foreach (var stylesheet in manifest.Assets.Stylesheets) writer.WriteStringValue(stylesheet);
-            writer.WriteEndArray();
-            writer.WritePropertyName("scripts");
-            writer.WriteStartArray();
-            foreach (var script in manifest.Assets.Scripts) writer.WriteStringValue(script);
-            writer.WriteEndArray();
-            writer.WriteEndObject();
+            WriteContributions(writer, manifest.Contributions, manifest.SchemaVersion);
+            if (manifest.SchemaVersion >= PortablePluginManifestValidator.AssetManifestSchemaVersion)
+            {
+                writer.WritePropertyName("assets");
+                writer.WriteStartObject();
+                writer.WritePropertyName("stylesheets");
+                writer.WriteStartArray();
+                foreach (var stylesheet in manifest.Assets.Stylesheets) writer.WriteStringValue(stylesheet);
+                writer.WriteEndArray();
+                writer.WritePropertyName("scripts");
+                writer.WriteStartArray();
+                foreach (var script in manifest.Assets.Scripts) writer.WriteStringValue(script);
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+            }
             if (manifest.InstallationUnit is not null)
             {
                 writer.WritePropertyName("installationUnit");
@@ -694,20 +697,23 @@ public static class PortablePluginManifestWriter
                 writer.WriteEndObject();
                 writer.WriteEndObject();
             }
-            writer.WritePropertyName("definitionFiles");
-            writer.WriteStartArray();
-            foreach (var file in manifest.DefinitionFiles)
+            if (manifest.SchemaVersion >= PortablePluginManifestValidator.VersionedManifestSchemaVersion)
             {
-                writer.WriteStartObject();
-                writer.WriteString("path", file.Path);
-                writer.WritePropertyName("contentHash");
-                writer.WriteStartObject();
-                writer.WriteString("algorithm", file.ContentHash.Algorithm);
-                writer.WriteString("digest", file.ContentHash.Digest);
-                writer.WriteEndObject();
-                writer.WriteEndObject();
+                writer.WritePropertyName("definitionFiles");
+                writer.WriteStartArray();
+                foreach (var file in manifest.DefinitionFiles)
+                {
+                    writer.WriteStartObject();
+                    writer.WriteString("path", file.Path);
+                    writer.WritePropertyName("contentHash");
+                    writer.WriteStartObject();
+                    writer.WriteString("algorithm", file.ContentHash.Algorithm);
+                    writer.WriteString("digest", file.ContentHash.Digest);
+                    writer.WriteEndObject();
+                    writer.WriteEndObject();
+                }
+                writer.WriteEndArray();
             }
-            writer.WriteEndArray();
             writer.WriteEndObject();
         }
         return System.Text.Encoding.UTF8.GetString(buffer.ToArray());
@@ -748,13 +754,16 @@ public static class PortablePluginManifestWriter
         writer.WriteEndArray();
     }
 
-    private static void WriteContributions(Utf8JsonWriter writer, PortablePluginContributionDeclaration contributions)
+    private static void WriteContributions(Utf8JsonWriter writer, PortablePluginContributionDeclaration contributions, int version)
     {
         writer.WriteStartObject();
-        WriteStrings(writer, "clients", contributions.Clients);
-        WriteStrings(writer, "harnessExtensions", contributions.HarnessExtensions);
-        WriteStrings(writer, "cliHosts", contributions.CliHosts);
-        WriteStrings(writer, "cliCommands", contributions.CliCommands);
+        if (version >= PortablePluginManifestValidator.MultiContributionManifestSchemaVersion)
+        {
+            WriteStrings(writer, "clients", contributions.Clients);
+            WriteStrings(writer, "harnessExtensions", contributions.HarnessExtensions);
+            WriteStrings(writer, "cliHosts", contributions.CliHosts);
+            WriteStrings(writer, "cliCommands", contributions.CliCommands);
+        }
         WriteStrings(writer, "components", contributions.Components);
         WriteStrings(writer, "themes", contributions.Themes);
         WriteStrings(writer, "pages", contributions.Pages);

@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using System.Reflection;
 using System.Reflection.Metadata;
@@ -20,6 +21,8 @@ public sealed class PluginContributionContractAcceptanceTests
     private const string FixtureFolder = "CORE0002.US02.SharedPlugin";
 
     [Fact]
+    [UnconditionalSuppressMessage("Trimming", "IL2075",
+        Justification = "The fact reads the public properties of its own contract types to prove that none of them carries System.Type. The test assembly is not trimmed and the contract assembly it reads is.")]
     public void UAC01_PortableDeclarationsContainNoRuntimeTypeNames()
     {
         // A versioned backend api contribution with the definition files it
@@ -67,10 +70,21 @@ public sealed class PluginContributionContractAcceptanceTests
         manifest.Contributions.DbContexts.Single().ShouldBe("Sample.Data.DoesNotExist");
 
         // No member of the declaration carries a type, so the declaration
-        // cannot hold an executable type that untrusted data named. A member of
-        // type System.Type would need the contract to reference that type at
-        // all, so the absence of the reference is the absence of the member.
-        TypeReferences(typeof(PortablePluginManifestValidator).Assembly).ShouldNotContain("System.Type");
+        // cannot hold an executable type that untrusted data named. The public
+        // properties of the declaration types are read to prove it; the test
+        // assembly is not trimmed and the contract assembly is.
+        foreach (var type in new[]
+        {
+            typeof(PortablePluginManifestDeclaration),
+            typeof(PortablePluginContributionDeclaration),
+            typeof(PortablePluginTargetDeclaration),
+            typeof(PortablePluginDefinitionFile),
+            typeof(PortablePluginParameterValue)
+        })
+        {
+            foreach (var property in type.GetProperties())
+                property.PropertyType.ShouldNotBe(typeof(Type));
+        }
 
         // The frontend meaning of a target is versioned the same way.
         var frontend = """
@@ -332,23 +346,6 @@ public sealed class PluginContributionContractAcceptanceTests
             if (visible) names.Add(metadata.GetString(type.Name));
         }
         return names;
-    }
-
-    /// <summary>The types the given assembly references.</summary>
-    private static IReadOnlyList<string> TypeReferences(Assembly assembly)
-    {
-        using var stream = File.OpenRead(assembly.Location);
-        using var pe = new PEReader(stream);
-        var metadata = pe.GetMetadataReader();
-        return metadata.TypeReferences
-            .Select(handle => metadata.GetTypeReference(handle))
-            .Select(reference =>
-            {
-                var name = metadata.GetString(reference.Name);
-                var space = metadata.GetString(reference.Namespace);
-                return space.Length == 0 ? name : space + "." + name;
-            })
-            .ToArray();
     }
 
     /// <summary>A published contract package of the local feed.</summary>
