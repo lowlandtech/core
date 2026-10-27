@@ -12,10 +12,10 @@ namespace LowlandTech.Core.Contracts.Transitions;
 public sealed record TransitionAdmissionRequest(
     TransitionDefinitionDocument Document,
     string ExpectedOwner,
-    PluginScope? Scope = null,
-    PluginScope? ExpectedScope = null,
+    PortablePluginScope? Scope = null,
+    PortablePluginScope? ExpectedScope = null,
     IReadOnlyCollection<string>? KnownCapabilities = null,
-    PluginContentHash? DeclaredContentHash = null);
+    PortablePluginContentHash? DeclaredContentHash = null);
 
 /// <summary>
 /// Validates a transition document and names every refusal of an inadmissible
@@ -146,7 +146,7 @@ public static class TransitionContractValidator
     }
 
     /// <summary>Whether two scopes name the same scope.</summary>
-    public static bool ScopeEquals(PluginScope left, PluginScope right)
+    public static bool ScopeEquals(PortablePluginScope left, PortablePluginScope right)
         => string.Equals(left.Host, right.Host, StringComparison.Ordinal)
            && string.Equals(left.Tenant, right.Tenant, StringComparison.Ordinal)
            && string.Equals(left.Client, right.Client, StringComparison.Ordinal)
@@ -472,11 +472,11 @@ public static class TransitionContractValidator
 
     private static void ValidateContentHash(
         TransitionDefinitionDocument document,
-        PluginContentHash? declared,
+        PortablePluginContentHash? declared,
         List<TransitionContractDiagnostic> diagnostics)
     {
         if (declared is null) return;
-        if (!PluginContentHash.IsSupported(declared.Algorithm))
+        if (!PortablePluginContentHash.IsSupported(declared.Algorithm))
         {
             diagnostics.Add(new TransitionContractDiagnostic(
                 TransitionContractDiagnosticCodes.HashAlgorithmUnknown,
@@ -486,7 +486,7 @@ public static class TransitionContractValidator
         }
 
         var canonical = TransitionContractDocument.Canonicalize(document);
-        var actual = PluginContentHash.Compute(declared.Algorithm, canonical);
+        var actual = PortablePluginContentHash.Compute(declared.Algorithm, canonical);
         if (!string.Equals(actual.Digest, declared.Digest, StringComparison.OrdinalIgnoreCase))
             diagnostics.Add(new TransitionContractDiagnostic(
                 TransitionContractDiagnosticCodes.HashMismatch,

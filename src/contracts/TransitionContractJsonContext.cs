@@ -17,8 +17,8 @@ namespace LowlandTech.Core.Contracts;
     UseStringEnumConverter = true)]
 [JsonSerializable(typeof(TransitionDefinitionDocument))]
 [JsonSerializable(typeof(TransitionAspectSet))]
-[JsonSerializable(typeof(PluginIdentity))]
-[JsonSerializable(typeof(PluginRevision))]
-[JsonSerializable(typeof(PluginScope))]
-[JsonSerializable(typeof(PluginContentHash))]
+[JsonSerializable(typeof(PortablePluginIdentity))]
+[JsonSerializable(typeof(PortablePluginRevision))]
+[JsonSerializable(typeof(PortablePluginScope))]
+[JsonSerializable(typeof(PortablePluginContentHash))]
 public sealed partial class TransitionContractJsonContext : JsonSerializerContext;

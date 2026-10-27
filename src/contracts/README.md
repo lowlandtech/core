@@ -14,6 +14,29 @@ no host runtime.
   scope, revision and content hash, the implementation binding, the lifetime
   and the provenance.
 
+## The names of the portable plugin identity
+
+Every type of `LowlandTech.Core.Contracts.Plugins` carries the `Portable`
+prefix: `PortablePluginKey`, `PortablePluginContentHash`,
+`PortablePluginRevision`, `PortablePluginScope`,
+`PortablePluginImplementationKind`, `PortablePluginLifetime`,
+`PortablePluginImplementationBinding`, `PortablePluginProvenance` and
+`PortablePluginIdentity`.
+
+The prefix is an ownership rule, not a style. A host that embeds this package
+keeps its own live runtime types and reserves the plain plugin identity names
+for them; the shared package must publish no name the host already publishes,
+or the host ends up with two copies of one contract type. The Backend
+(`BKPL0002-US01-SC01`) reserved `PluginKey`, `PluginRevision`, `PluginScope`,
+`PluginImplementationKind`, `PluginLifetime`, `PluginImplementationBinding`,
+`PluginProvenance`, `ContentHash` and `PluginDescriptor` to its own runtime
+and reported the collision as `PluginDuplicateTypes`.
+
+The prefixed type is the portable declaration the host and an external plugin
+agree on. The host adopts the names of this package and drops its own copies
+when it consumes the contract, so the plain family and the portable family
+never coexist in one host.
+
 ## What it deliberately does not carry
 
 No EF Core, no ASP.NET Core, no database and no host runtime dependency. The

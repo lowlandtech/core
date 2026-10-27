@@ -80,6 +80,23 @@ public sealed class GraphContractAcceptanceTests
         foreach (var legacy in new[] { "Node", "Edge", "NodeType", "EdgeType", "Property", "PropertyDefinition", "Rule", "RuleGroup", "Commit", "Document", "PluginDescriptor" })
             published.ShouldNotContain(legacy);
 
+        // The shared types carry no name that a host reserves to its own runtime.
+        // The Backend reserves the plain plugin identity names to the live types
+        // it publishes itself and reported the collision as PluginDuplicateTypes,
+        // so the contract publishes the portable family instead. The host adopts
+        // these names and drops its own copies when it consumes the contract.
+        foreach (var reserved in new[] { "PluginKey", "PluginRevision", "PluginScope", "PluginImplementationKind", "PluginLifetime", "PluginImplementationBinding", "PluginProvenance", "ContentHash", "PluginDescriptor" })
+            published.ShouldNotContain(reserved);
+
+        // The names of the previous contract version duplicated a host contract
+        // under another name, so they stay reserved as well.
+        foreach (var previous in new[] { "PluginContentHash", "PluginIdentity" })
+            published.ShouldNotContain(previous);
+
+        // The portable family is complete and carries the portable prefix.
+        foreach (var portable in new[] { "PortablePluginKey", "PortablePluginContentHash", "PortablePluginRevision", "PortablePluginScope", "PortablePluginImplementationKind", "PortablePluginLifetime", "PortablePluginImplementationBinding", "PortablePluginProvenance", "PortablePluginIdentity" })
+            published.ShouldContain(portable);
+
         // The document is reachable through the public contract surface, so a
         // package-only consumer can read and validate it without a host type.
         var document = ReadFixtureDocument("harness-list-main-intents.json");
@@ -88,8 +105,8 @@ public sealed class GraphContractAcceptanceTests
         TransitionContractValidator.Admit(new TransitionAdmissionRequest(
             contract,
             contract.Plugin,
-            new PluginScope("harness.local", null, null, null, null),
-            new PluginScope("harness.local", null, null, null, null),
+            new PortablePluginScope("harness.local", null, null, null, null),
+            new PortablePluginScope("harness.local", null, null, null, null),
             [contract.Capability])).ShouldBeEmpty();
     }
 
@@ -98,7 +115,7 @@ public sealed class GraphContractAcceptanceTests
     {
         var document = ReadFixtureDocument("harness-list-main-intents.json");
         var contract = TransitionContractDocument.Read(document.ToJsonString());
-        var scope = new PluginScope("harness.local", null, null, null, null);
+        var scope = new PortablePluginScope("harness.local", null, null, null, null);
         var capabilities = new[] { "component.list-intents" };
 
         // Wrong owner.
@@ -114,7 +131,7 @@ public sealed class GraphContractAcceptanceTests
 
         // Wrong scope.
         var wrongScope = TransitionContractValidator.Admit(new TransitionAdmissionRequest(
-            contract, contract.Plugin, scope, new PluginScope("other.host", null, null, null, null), capabilities));
+            contract, contract.Plugin, scope, new PortablePluginScope("other.host", null, null, null, null), capabilities));
         wrongScope.ShouldContain(diagnostic => diagnostic.Code == TransitionContractDiagnosticCodes.ScopeInvalid);
 
         // Unknown capability reference.
@@ -127,17 +144,17 @@ public sealed class GraphContractAcceptanceTests
         var canonical = TransitionContractDocument.Canonicalize(contract);
         var wrongHash = TransitionContractValidator.Admit(new TransitionAdmissionRequest(
             contract, contract.Plugin, scope, scope, capabilities,
-            new PluginContentHash("sha256", new string('0', 64))));
+            new PortablePluginContentHash("sha256", new string('0', 64))));
         wrongHash.ShouldContain(diagnostic => diagnostic.Code == TransitionContractDiagnosticCodes.HashMismatch);
 
         // The same content hashes to the digest the contract computes.
-        var correctHash = PluginContentHash.Compute("sha256", canonical);
+        var correctHash = PortablePluginContentHash.Compute("sha256", canonical);
         TransitionContractValidator.Admit(new TransitionAdmissionRequest(
             contract, contract.Plugin, scope, scope, capabilities, correctHash)).ShouldBeEmpty();
 
         // An unsupported hash algorithm is refused by name too.
         TransitionContractValidator.Admit(new TransitionAdmissionRequest(
-            contract, contract.Plugin, scope, scope, capabilities, new PluginContentHash("md5", "0")))
+            contract, contract.Plugin, scope, scope, capabilities, new PortablePluginContentHash("md5", "0")))
             .ShouldContain(diagnostic => diagnostic.Code == TransitionContractDiagnosticCodes.HashAlgorithmUnknown);
     }
 
