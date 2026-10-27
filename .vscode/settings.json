@@ -1,0 +1,20 @@
+{
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.jj": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+        "TestResults": true,
+        "artifacts": true,
+        "**/bin": true,
+        "**/obj": true
+    },
+    "hide-files.files": [
+        "TestResults",
+        "artifacts",
+        "**/bin",
+        "**/obj"
+    ]
+}
