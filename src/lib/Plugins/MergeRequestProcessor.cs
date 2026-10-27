@@ -1,16 +1,21 @@
 namespace LowlandTech.Core.Plugins;
 
 /// <summary>
-/// Processes approved and rejected <see cref="GraphMergeRequest"/> objects:
+/// Processes the live states of a <see cref="GraphMergeRequest"/>:
 /// <list type="bullet">
+///   <item><b>Review</b>: an open request enters the review.</item>
 ///   <item><b>Approve</b>: replays every <see cref="ProposedTransition"/> against the target
 ///     database (via injected tool adapters), resolves provisional IDs, archives the SQLite
 ///     branch file, and emits <see cref="GraphMergeRequestMerged"/>.</item>
 ///   <item><b>Reject</b>: archives the branch file without executing any tools.</item>
+///   <item><b>Abandon</b>: archives the branch file without executing any tools.</item>
+///   <item><b>Merge</b>: records the terminal merged state of an approved request.</item>
 ///   <item><b>Hotfix back-merge</b>: after approving a hotfix MR, automatically creates
 ///     a back-merge <see cref="GraphMergeRequest"/> targeting develop.</item>
 /// </list>
-/// SPEC2050 US05.
+/// The processor owns every move between the states, so a client never assigns a
+/// state itself and an invalid move is refused here instead of being hidden.
+/// SPEC2050 US05; CORE0005-US01-SC01.
 /// </summary>
 public sealed class MergeRequestProcessor
 {
@@ -23,10 +28,78 @@ public sealed class MergeRequestProcessor
     }
 
     /// <summary>
+    /// Whether the request may still be approved.
+    /// </summary>
+    /// <param name="mergeRequest">The request to read.</param>
+    public bool CanApprove(GraphMergeRequest mergeRequest)
+    {
+        ArgumentNullException.ThrowIfNull(mergeRequest);
+        return mergeRequest.Status.CanApprove();
+    }
+
+    /// <summary>
+    /// Whether the request may still be rejected.
+    /// </summary>
+    /// <param name="mergeRequest">The request to read.</param>
+    public bool CanReject(GraphMergeRequest mergeRequest)
+    {
+        ArgumentNullException.ThrowIfNull(mergeRequest);
+        return mergeRequest.Status.CanReject();
+    }
+
+    /// <summary>
+    /// Whether the request may still enter the review.
+    /// </summary>
+    /// <param name="mergeRequest">The request to read.</param>
+    public bool CanStartReview(GraphMergeRequest mergeRequest)
+    {
+        ArgumentNullException.ThrowIfNull(mergeRequest);
+        return mergeRequest.Status.CanStartReview();
+    }
+
+    /// <summary>
+    /// Whether the request may still be abandoned.
+    /// </summary>
+    /// <param name="mergeRequest">The request to read.</param>
+    public bool CanAbandon(GraphMergeRequest mergeRequest)
+    {
+        ArgumentNullException.ThrowIfNull(mergeRequest);
+        return mergeRequest.Status.CanAbandon();
+    }
+
+    /// <summary>
+    /// Whether the request may be merged.
+    /// </summary>
+    /// <param name="mergeRequest">The request to read.</param>
+    public bool CanMerge(GraphMergeRequest mergeRequest)
+    {
+        ArgumentNullException.ThrowIfNull(mergeRequest);
+        return mergeRequest.Status.CanMerge();
+    }
+
+    /// <summary>
+    /// Move an open request into the review.
+    /// </summary>
+    /// <param name="mergeRequest">The request to review.</param>
+    /// <param name="cancellationToken"></param>
+    public Task StartReviewAsync(
+        GraphMergeRequest mergeRequest,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(mergeRequest);
+        if (!mergeRequest.Status.CanStartReview())
+            throw new InvalidOperationException(
+                $"Cannot start the review of a merge request with status {mergeRequest.Status}.");
+
+        mergeRequest.Status = MergeRequestStatus.Reviewing;
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Replay the branch transitions against the target, archive the SQLite file, and emit
     /// the <see cref="GraphMergeRequestMerged"/> event.
     /// </summary>
-    /// <param name="mergeRequest">Open merge request to approve.</param>
+    /// <param name="mergeRequest">Open or reviewing merge request to approve.</param>
     /// <param name="cancellationToken"></param>
     /// <returns>
     /// The domain event plus, for hotfix branches, an automatically-created back-merge MR.
@@ -36,7 +109,7 @@ public sealed class MergeRequestProcessor
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(mergeRequest);
-        if (mergeRequest.Status != MergeRequestStatus.Open)
+        if (!mergeRequest.Status.CanApprove())
             throw new InvalidOperationException(
                 $"Cannot approve a merge request with status {mergeRequest.Status}.");
 
@@ -88,15 +161,50 @@ public sealed class MergeRequestProcessor
     /// <summary>
     /// Archive the SQLite file without executing any tools.
     /// </summary>
+    /// <param name="mergeRequest">Open or reviewing merge request to reject.</param>
+    /// <param name="cancellationToken"></param>
     public Task RejectAsync(GraphMergeRequest mergeRequest, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(mergeRequest);
-        if (mergeRequest.Status != MergeRequestStatus.Open)
+        if (!mergeRequest.Status.CanReject())
             throw new InvalidOperationException(
                 $"Cannot reject a merge request with status {mergeRequest.Status}.");
 
         mergeRequest.Status = MergeRequestStatus.Rejected;
         ArchiveSqlite(mergeRequest.SqlitePath);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Abandon a live request without executing any tools.
+    /// </summary>
+    /// <param name="mergeRequest">Open or reviewing merge request to abandon.</param>
+    /// <param name="cancellationToken"></param>
+    public Task AbandonAsync(GraphMergeRequest mergeRequest, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(mergeRequest);
+        if (!mergeRequest.Status.CanAbandon())
+            throw new InvalidOperationException(
+                $"Cannot abandon a merge request with status {mergeRequest.Status}.");
+
+        mergeRequest.Status = MergeRequestStatus.Abandoned;
+        ArchiveSqlite(mergeRequest.SqlitePath);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Record the terminal merged state of an approved request.
+    /// </summary>
+    /// <param name="mergeRequest">The approved merge request to merge.</param>
+    /// <param name="cancellationToken"></param>
+    public Task MergeAsync(GraphMergeRequest mergeRequest, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(mergeRequest);
+        if (!mergeRequest.Status.CanMerge())
+            throw new InvalidOperationException(
+                $"Cannot merge a merge request with status {mergeRequest.Status}.");
+
+        mergeRequest.Status = MergeRequestStatus.Merged;
         return Task.CompletedTask;
     }
 

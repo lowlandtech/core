@@ -13,7 +13,10 @@ public sealed class GraphMergeRequest
     /// <summary>Which target database this MR was opened against.</summary>
     public required BranchType TargetBranch { get; init; }
 
-    /// <summary>Current approval state. Mutable so approvers can advance the lifecycle.</summary>
+    /// <summary>
+    /// Current approval state. Mutable so the processor can advance the lifecycle;
+    /// a client never assigns a state itself. The default is the open state.
+    /// </summary>
     public MergeRequestStatus Status { get; set; } = MergeRequestStatus.Open;
 
     /// <summary>Ordered list of transitions to replay when approved.</summary>

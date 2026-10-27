@@ -39,8 +39,10 @@ try {
     $coreBuild = Invoke-DotNetCapture @('build', 'Core.slnx', '-c', 'Release', '-m:1', "-p:Version=$Version", '-p:EnableTrimAnalyzer=true') (Join-Path $staging 'core-trim-analysis.log')
     $coreTrimWarnings = @([regex]::Matches($coreBuild, 'warning IL\d+')).Count
     if ($coreTrimWarnings -ne 0) { throw "Core trim analysis reported $coreTrimWarnings warning(s); the candidate requires zero." }
-    Invoke-DotNet @('test', '--project', 'src/test/LowlandTech.Core.Tests.csproj', '-c', 'Release', '--no-build')
+    # The candidate is packed before the tests run, so a test that reads the
+    # candidate observes the artifact this release publishes.
     Invoke-DotNet @('pack', 'src/lib/LowlandTech.Core.csproj', '-c', 'Release', '--no-build', "-p:Version=$Version", '-o', $staging)
+    Invoke-DotNet @('test', '--project', 'src/test/LowlandTech.Core.Tests.csproj', '-c', 'Release', '--no-build')
     $packages = @(Get-ChildItem -LiteralPath $staging -Filter '*.nupkg')
     if ($packages.Count -ne 1) { throw 'Expected exactly the Core package.' }
     $package = $packages[0]
@@ -88,7 +90,12 @@ try {
     $consumerTrimWarnings = @([regex]::Matches($trimOutput, 'Trim analysis warning IL\d+')).Count
     $trimmedReport = (& (Join-Path $trimmedOut 'Consumer.exe') | Out-String).Trim()
     if ($LASTEXITCODE -ne 0) { throw "Trimmed consumer failed with exit $LASTEXITCODE." }
-    foreach ($expected in @('"registryKey":"header"', '"installModes":"Routed"', '"startupContract":"LowlandTech.Components.Core.ComponentsStartupMap"')) {
+    foreach ($expected in @(
+        '"registryKey":"header"',
+        '"installModes":"Routed"',
+        '"startupContract":"LowlandTech.Components.Core.ComponentsStartupMap"',
+        '"mergeRequestStates":"Open,Approved,Rejected,Reviewing,Merged,Abandoned"',
+        '"featureProposalStates":"Draft,Reviewed,Accepted,Rejected"')) {
         if ($trimmedReport -notlike "*$expected*") { throw "Trimmed consumer did not retain $expected" }
     }
     $commit = (& git rev-parse HEAD).Trim()
