@@ -20,7 +20,7 @@ pwsh -NoProfile -File eng/build-local.ps1
 ~~~
 
 Components owns LowlandTech.Components.Core; Core references the exact
-2026.10.1-20261024235136415 package from the configured local feed. No sibling
+2026.10.1-20261027132304836209585 package from the configured local feed. No sibling
 source checkout or duplicate Components.Core producer is part of this solution.
 Public NuGet/CI feed provisioning remains separate from local-feed verification.
 
