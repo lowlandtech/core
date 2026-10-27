@@ -1,4 +1,6 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Plugins;
 
 /// <summary>
@@ -6,12 +8,17 @@ namespace LowlandTech.Core.Plugins;
 /// IConfiguration section (Layer 2) → persistent DB overrides (Layer 3).
 /// SPEC2050 US07.
 /// </summary>
-public interface IFeatureSettingsProvider<TSettings> where TSettings : class, new()
+public interface IFeatureSettingsProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TSettings>
+    where TSettings : class, new()
 {
     /// <summary>Resolve the merged settings for the bound feature.</summary>
+    [RequiresUnreferencedCode(
+        "Merging feature settings binds the configuration section onto the settings type by reflection, so the settings members cannot be statically analyzed.")]
     TSettings Get();
 
     /// <summary>Persist a Layer 3 override for a single property by name.</summary>
+    [RequiresUnreferencedCode(
+        "Persisting a feature setting serializes the override by reflection, so the value type cannot be statically analyzed.")]
     Task SetAsync(string key, object? value, CancellationToken cancellationToken = default);
 
     /// <summary>Remove a Layer 3 override and fall back to Layer 2 / Layer 1.</summary>
@@ -19,7 +26,7 @@ public interface IFeatureSettingsProvider<TSettings> where TSettings : class, ne
 }
 
 /// <summary>Default <see cref="IFeatureSettingsProvider{TSettings}"/> with the three-layer merge.</summary>
-public sealed class FeatureSettingsProvider<TSettings>(
+public sealed class FeatureSettingsProvider<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)] TSettings>(
     string featureId,
     IConfiguration configuration,
     IFeatureSettingsStore store) : IFeatureSettingsProvider<TSettings>
@@ -33,6 +40,8 @@ public sealed class FeatureSettingsProvider<TSettings>(
         WriteIndented = false,
     };
 
+    [RequiresUnreferencedCode(
+        "Merging feature settings binds the configuration section onto the settings type by reflection, so the settings members cannot be statically analyzed.")]
     public TSettings Get()
     {
         // Layer 1: hardcoded defaults from the type's parameterless constructor.
@@ -64,6 +73,8 @@ public sealed class FeatureSettingsProvider<TSettings>(
         return settings;
     }
 
+    [RequiresUnreferencedCode(
+        "Persisting a feature setting serializes the override by reflection, so the value type cannot be statically analyzed.")]
     public Task SetAsync(string key, object? value, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(key);

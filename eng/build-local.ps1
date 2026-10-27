@@ -17,9 +17,28 @@ function Invoke-DotNet([string[]]$Arguments) {
     & dotnet @Arguments
     if ($LASTEXITCODE -ne 0) { throw "dotnet $($Arguments[0]) failed with exit $LASTEXITCODE" }
 }
+function Invoke-DotNetCapture([string[]]$Arguments, [string]$LogPath) {
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        $output = & dotnet @Arguments 2>&1
+        $exit = $LASTEXITCODE
+    } finally {
+        $ErrorActionPreference = $previous
+    }
+    $text = (($output | ForEach-Object { $_.ToString() }) -join [Environment]::NewLine)
+    if ($LogPath) { Set-Content -LiteralPath $LogPath -Value $text -Encoding utf8 }
+    Write-Host $text
+    if ($exit -ne 0) { throw "dotnet $($Arguments[0]) failed with exit $exit" }
+    return $text
+}
 Push-Location $root
 try {
-    Invoke-DotNet @('build', 'Core.slnx', '-c', 'Release', '-m:1', "-p:Version=$Version")
+    # The release build runs under the selected trim analysis, and the candidate
+    # must report zero trim warnings.
+    $coreBuild = Invoke-DotNetCapture @('build', 'Core.slnx', '-c', 'Release', '-m:1', "-p:Version=$Version", '-p:EnableTrimAnalyzer=true') (Join-Path $staging 'core-trim-analysis.log')
+    $coreTrimWarnings = @([regex]::Matches($coreBuild, 'warning IL\d+')).Count
+    if ($coreTrimWarnings -ne 0) { throw "Core trim analysis reported $coreTrimWarnings warning(s); the candidate requires zero." }
     Invoke-DotNet @('test', '--project', 'src/test/LowlandTech.Core.Tests.csproj', '-c', 'Release', '--no-build')
     Invoke-DotNet @('pack', 'src/lib/LowlandTech.Core.csproj', '-c', 'Release', '--no-build', "-p:Version=$Version", '-o', $staging)
     $packages = @(Get-ChildItem -LiteralPath $staging -Filter '*.nupkg')
@@ -50,13 +69,28 @@ try {
     $config = Join-Path $consumer 'NuGet.Config'
     [IO.File]::WriteAllText($config, "<?xml version='1.0' encoding='utf-8'?><configuration><packageSources><clear/><add key='candidate' value='$stageXml'/><add key='dependencies' value='$feedXml'/><add key='nuget.org' value='https://api.nuget.org/v3/index.json'/></packageSources></configuration>")
     $project = Join-Path $consumer 'Consumer.csproj'
-    Invoke-DotNet @('restore', $project, '--configfile', $config, '--packages', (Join-Path $consumer 'packages'), "-p:CorePackageVersion=$Version")
+    $consumerPackages = Join-Path $consumer 'packages'
+    Invoke-DotNet @('restore', $project, '--configfile', $config, '--packages', $consumerPackages, "-p:CorePackageVersion=$Version")
     Invoke-DotNet @('build', $project, '-c', 'Release', '--no-restore', "-p:CorePackageVersion=$Version")
     Invoke-DotNet @('run', '--project', $project, '-c', 'Release', '--no-build', '--no-restore', "-p:CorePackageVersion=$Version")
     $assets = Get-Content -LiteralPath (Join-Path $consumer 'obj/project.assets.json') -Raw | ConvertFrom-Json
     $names = @($assets.libraries.PSObject.Properties.Name)
     if ($names -notcontains "LowlandTech.Core/$Version" -or $names -notcontains 'LowlandTech.Components.Core/2026.10.1-20261024235136415') { throw 'Isolated consumer did not resolve the exact closure.' }
     if (@($assets.libraries.PSObject.Properties | Where-Object { $_.Value.type -eq 'project' }).Count) { throw 'Package consumer contains a project substitution.' }
+
+    # The selected trim analysis is applied to the candidate itself: the isolated
+    # consumer is published trimmed and still has to resolve the graph registry,
+    # the plugin descriptor defaults and the ComponentsStartupMap contract.
+    $rid = [System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier
+    $trimmedOut = Join-Path $consumer 'trimmed'
+    Invoke-DotNet @('restore', $project, '--configfile', $config, '--packages', $consumerPackages, "-p:CorePackageVersion=$Version", '-r', $rid)
+    $trimOutput = Invoke-DotNetCapture @('publish', $project, '-c', 'Release', '--no-restore', '-r', $rid, '--self-contained', 'true', "-p:CorePackageVersion=$Version", '-o', $trimmedOut) (Join-Path $consumer 'consumer-trim-analysis.log')
+    $consumerTrimWarnings = @([regex]::Matches($trimOutput, 'Trim analysis warning IL\d+')).Count
+    $trimmedReport = (& (Join-Path $trimmedOut 'Consumer.exe') | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0) { throw "Trimmed consumer failed with exit $LASTEXITCODE." }
+    foreach ($expected in @('"registryKey":"header"', '"installModes":"Routed"', '"startupContract":"LowlandTech.Components.Core.ComponentsStartupMap"')) {
+        if ($trimmedReport -notlike "*$expected*") { throw "Trimmed consumer did not retain $expected" }
+    }
     $commit = (& git rev-parse HEAD).Trim()
     $report = [ordered]@{
         version = $Version
@@ -65,6 +99,11 @@ try {
         packageSha256 = (Get-FileHash -LiteralPath $package.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
         isolatedConsumer = $consumer
         published = !$SkipPublish
+        trimAnalysis = [ordered]@{
+            coreLibraryWarnings = $coreTrimWarnings
+            trimmedConsumerWarnings = $consumerTrimWarnings
+            trimmedConsumerReport = $trimmedReport
+        }
     }
     if (!$SkipPublish) {
         $null = New-Item -ItemType Directory -Path $feed -Force

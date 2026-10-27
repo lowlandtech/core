@@ -1,4 +1,6 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Plugins;
 
 /// <summary>
@@ -24,6 +26,8 @@ public static class PluginHostExtensions
     /// <see cref="IApiPlugin.ConfigureServices"/> on each, and registers the list
     /// in DI as <c>IReadOnlyList&lt;IApiPlugin&gt;</c>.
     /// </summary>
+    [RequiresUnreferencedCode(
+        "Adding backend plugins discovers plugin implementations by reflection, so the plugin types are not statically reachable and cannot be preserved by the trimmer.")]
     public static IReadOnlyList<IApiPlugin> AddBackendPlugins(
         this IServiceCollection services,
         IConfiguration configuration)
@@ -40,6 +44,8 @@ public static class PluginHostExtensions
     /// <see cref="IAppPlugin.ConfigureServices"/> on each, and registers the list
     /// in DI as <c>IReadOnlyList&lt;IAppPlugin&gt;</c>.
     /// </summary>
+    [RequiresUnreferencedCode(
+        "Adding app plugins discovers plugin implementations by reflection, so the plugin types are not statically reachable and cannot be preserved by the trimmer.")]
     public static IReadOnlyList<IAppPlugin> AddFrontendPlugins(
         this IServiceCollection services,
         IConfiguration configuration)

@@ -8,6 +8,10 @@
     <AssemblyName>LowlandTech.Core</AssemblyName>
     <IsPackable>true</IsPackable>
     <PackageId>LowlandTech.Core</PackageId>
+    <!-- The package is consumed by trimmed hosts, so it declares trimmability and
+         runs the trim analyzer over its own source. -->
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
     <Authors>LowlandTech</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>

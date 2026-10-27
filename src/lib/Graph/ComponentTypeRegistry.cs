@@ -1,4 +1,6 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Graph;
 
 public class ComponentTypeRegistry : IComponentTypeRegistry
@@ -7,6 +9,8 @@ public class ComponentTypeRegistry : IComponentTypeRegistry
     private Dictionary<Guid, Type> _byId = new();
     private readonly object _lock = new();
 
+    [RequiresUnreferencedCode(
+        "Scanning an assembly for descriptor implementations uses reflection, so the descriptor types and their static properties are not statically reachable and cannot be preserved by the trimmer.")]
     public void Initialize(Assembly assembly)
     {
         lock (_lock)

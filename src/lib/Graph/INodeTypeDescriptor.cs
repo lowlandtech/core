@@ -1,4 +1,6 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Graph;
 
 public readonly record struct EntityParentRef(string? Key, Guid? Id)
@@ -37,11 +39,19 @@ public interface INodeTypeDescriptor
 
     virtual IReadOnlyList<NavigationHeaderDefinition>? NavigationHeaders => null;
 
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2075",
+        Justification = "ExtractId reads the entity identifier by convention from the entity's runtime type. The entity is handed over as an untyped object, so the trimmer cannot observe which members are read. A host that trims must keep the entity type reachable together with its public properties.")]
     virtual Guid ExtractId(object entity)
         => entity.GetType().GetProperty("Id", BindingFlags.Public | BindingFlags.Instance)?.GetValue(entity) is Guid id
             ? id
             : Guid.Empty;
 
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2075",
+        Justification = "ExtractLabel reads the entity label by convention from the entity's runtime type. The entity is handed over as an untyped object, so the trimmer cannot observe which members are read. A host that trims must keep the entity type reachable together with its public properties.")]
     virtual string ExtractLabel(object entity)
         => entity.GetType().GetProperty("Name", BindingFlags.Public | BindingFlags.Instance)?.GetValue(entity) as string
             ?? string.Empty;

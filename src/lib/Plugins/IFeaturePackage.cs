@@ -1,4 +1,6 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Plugins;
 
 /// <summary>
@@ -22,7 +24,9 @@ public interface IFeatureRegistrationBuilder
     /// Add a feature binding the contract <typeparamref name="TContract"/> to the
     /// implementation <typeparamref name="TImplementation"/>.
     /// </summary>
-    IFeatureRegistrationBuilder AddFeature<TContract, TImplementation>(Action<FeatureBuilder>? configure = null)
+    [RequiresUnreferencedCode(
+        "Registering a feature binds the contract and implementation types into the service container and inspects the declared event subscriber types by reflection, so those types are not statically reachable and cannot be preserved by the trimmer.")]
+    IFeatureRegistrationBuilder AddFeature<TContract, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(Action<FeatureBuilder>? configure = null)
         where TContract : class
         where TImplementation : class, TContract;
 
@@ -52,6 +56,7 @@ public sealed class FeatureBuilder
     public string[] RequiredAuthenticationSchemes { get; set; } = [];
     public bool EnabledByDefault { get; set; } = true;
     public EdgeTypeDescriptor? EdgeType { get; set; }
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     public Type? SettingsType { get; set; }
     public PageTypeDescriptor[] Pages { get; set; } = [];
     public BlockTypeDescriptor[] Blocks { get; set; } = [];
@@ -75,7 +80,9 @@ public sealed class FeatureRegistrationBuilder(
 {
     private static readonly Type EventHandlerOpenType = typeof(IEventHandler<>);
 
-    public IFeatureRegistrationBuilder AddFeature<TContract, TImplementation>(Action<FeatureBuilder>? configure = null)
+    [RequiresUnreferencedCode(
+        "Registering a feature binds the contract and implementation types into the service container and inspects the declared event subscriber types by reflection, so those types are not statically reachable and cannot be preserved by the trimmer.")]
+    public IFeatureRegistrationBuilder AddFeature<TContract, [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TImplementation>(Action<FeatureBuilder>? configure = null)
         where TContract : class
         where TImplementation : class, TContract
     {

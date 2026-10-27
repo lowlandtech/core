@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Plugins;
 
 /// <summary>
@@ -42,6 +44,7 @@ public sealed record FeatureDescriptor
     public EdgeTypeDescriptor? EdgeType { get; init; }
 
     /// <summary>Optional shared settings type for this feature.</summary>
+    [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor)]
     public Type? SettingsType { get; init; }
 
     /// <summary>Pages contributed by this feature.</summary>

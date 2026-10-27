@@ -5,7 +5,11 @@ namespace LowlandTech.Core.Tests;
 
 public sealed class CoreTrimmingAcceptanceTests
 {
-    [Fact(Skip = "UAC05 inventory: implement the trimmable package metadata and the explicit dynamic-discovery trim boundary.")]
+    [Fact]
+    [UnconditionalSuppressMessage(
+        "Trimming",
+        "IL2026",
+        Justification = "This Fact asserts that the dynamic plugin-discovery entrypoints carry RequiresUnreferencedCodeAttribute, so it has to observe those members by reflection. The Fact never calls the discovery entrypoints themselves.")]
     public void UAC05_TrimmablePackageMarksDynamicDiscoveryUnreferencedCode()
     {
         var metadata = typeof(NodeTypeRegistry).Assembly

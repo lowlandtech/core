@@ -1,4 +1,6 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Plugins;
 
 /// <summary>
@@ -14,12 +16,36 @@ namespace LowlandTech.Core.Plugins;
 /// </summary>
 public static class PluginDiscovery
 {
+    /// <summary>
+    /// Discovers the API plugins of the host.
+    /// <para>
+    /// The discovery scans loaded assemblies and loads assemblies by path, so the
+    /// discovered plugin types are not statically reachable. The entrypoint
+    /// therefore requires unreferenced-code handling, and a trimmed host must
+    /// call it through a dynamic-code boundary.
+    /// </para>
+    /// </summary>
+    [RequiresUnreferencedCode(
+        "Plugin discovery loads plugin assemblies and instantiates plugin types by reflection, so the plugin types are not statically reachable and cannot be preserved by the trimmer.")]
     public static IReadOnlyList<IApiPlugin> DiscoverApiPlugins(IConfiguration configuration)
         => Discover<IApiPlugin>(configuration, "Plugins:Backend");
 
+    /// <summary>
+    /// Discovers the app plugins of the host.
+    /// <para>
+    /// The discovery scans loaded assemblies and loads assemblies by path, so the
+    /// discovered plugin types are not statically reachable. The entrypoint
+    /// therefore requires unreferenced-code handling, and a trimmed host must
+    /// call it through a dynamic-code boundary.
+    /// </para>
+    /// </summary>
+    [RequiresUnreferencedCode(
+        "Plugin discovery loads plugin assemblies and instantiates plugin types by reflection, so the plugin types are not statically reachable and cannot be preserved by the trimmer.")]
     public static IReadOnlyList<IAppPlugin> DiscoverAppPlugins(IConfiguration configuration)
         => Discover<IAppPlugin>(configuration, "Plugins:Frontend");
 
+    [RequiresUnreferencedCode(
+        "Plugin discovery loads plugin assemblies and instantiates plugin types by reflection, so the plugin types are not statically reachable and cannot be preserved by the trimmer.")]
     private static IReadOnlyList<T> Discover<T>(IConfiguration configuration, string section)
     {
         var plugins = new List<T>();
@@ -96,6 +122,8 @@ public static class PluginDiscovery
         return plugins;
     }
 
+    [RequiresUnreferencedCode(
+        "Plugin discovery loads plugin assemblies and instantiates plugin types by reflection, so the plugin types are not statically reachable and cannot be preserved by the trimmer.")]
     private static void ScanAssembly<T>(Assembly assembly, List<T> plugins, HashSet<Type> seen)
     {
         try

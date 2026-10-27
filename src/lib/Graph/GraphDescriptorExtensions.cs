@@ -1,4 +1,6 @@
 
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Graph;
 
 public static class GraphDescriptorExtensions
@@ -9,6 +11,8 @@ public static class GraphDescriptorExtensions
     /// and registers each as a DI singleton. Call this from a plugin's ConfigureServices so the
     /// plugin is self-contained and its descriptors are discoverable via IEnumerable&lt;T&gt;.
     /// </summary>
+    [RequiresUnreferencedCode(
+        "Scanning an assembly for descriptor implementations uses reflection, so the descriptor types are not statically reachable and cannot be preserved by the trimmer.")]
     public static IServiceCollection AddGraphDescriptors(this IServiceCollection services, Assembly assembly)
     {
         foreach (var type in SafeGetTypes(assembly))
@@ -24,6 +28,8 @@ public static class GraphDescriptorExtensions
         return services;
     }
 
+    [RequiresUnreferencedCode(
+        "Enumerating the types of an assembly uses reflection, so the descriptor types are not statically reachable and cannot be preserved by the trimmer.")]
     private static IEnumerable<Type> SafeGetTypes(Assembly assembly)
     {
         try { return assembly.GetTypes(); }

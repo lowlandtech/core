@@ -1,10 +1,12 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace LowlandTech.Core.Plugins;
 
 /// <summary>
 /// Base class for plugin data source adapters.
 /// Auto-registers every DbSet&lt;T&gt; property on TContext — no switch statement needed in subclasses.
 /// </summary>
-public abstract class DbFactoryContext<TContext>(IDbContextFactory<TContext> factory)
+public abstract class DbFactoryContext<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TContext>(IDbContextFactory<TContext> factory)
     : IDbFactoryContext, IDisposable
     where TContext : DbContext
 {
