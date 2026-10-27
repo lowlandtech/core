@@ -390,7 +390,10 @@ public sealed class GitFlowClientContractAcceptanceTests
                 using (var reader = new StreamReader(nuspec.Open()))
                 {
                     var document = System.Xml.Linq.XDocument.Parse(reader.ReadToEnd());
-                    version = document.Root?.Element("metadata")?.Element("version")?.Value;
+                    // The nuspec carries a default namespace, so every element is
+                    // read by its local name.
+                    version = document.Descendants("metadata").FirstOrDefault()?
+                        .Element("version")?.Value;
                     dependencies.AddRange(document.Descendants("dependency")
                         .Select(element => (string?)element.Attribute("id") ?? string.Empty)
                         .Where(id => id.Length > 0));
