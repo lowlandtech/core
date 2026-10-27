@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 2, "key": "sample.v2.cli", "name": "V2 Cli",
+  "description": "The version 2 manifest that declares cli commands without the cli capability",
+  "target": "blazor",
+  "dependencies": [], "routes": [], "slots": [], "placements": [],
+  "contributions": { "cliCommands": ["Sample.Cli.One"] },
+  "installationUnit": { "requiredCapabilities": ["sample"], "requiredContracts": {} }
+}

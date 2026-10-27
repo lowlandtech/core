@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 3, "key": "sample.v3.empty", "name": "V3 Empty",
+  "description": "The version 3 manifest that declares assets without required capabilities",
+  "target": "blazor",
+  "dependencies": [], "routes": [], "slots": [], "placements": [],
+  "contributions": { "components": [], "themes": [], "pages": [], "services": [], "capabilities": [], "transitions": [], "nodeTypes": [], "dbContexts": [], "dataServices": [] },
+  "installationUnit": { "requiredCapabilities": [], "requiredContracts": {} },
+  "assets": { "stylesheets": ["_content/Sample.Assets/app.css"], "scripts": [] }
+}

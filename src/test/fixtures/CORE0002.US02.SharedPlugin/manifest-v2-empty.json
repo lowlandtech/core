@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 2, "key": "sample.v2.empty", "name": "V2 Empty",
+  "description": "The version 2 manifest without required capabilities",
+  "target": "blazor",
+  "dependencies": [], "routes": [], "slots": [], "placements": [],
+  "contributions": { "components": [], "themes": [], "pages": [], "services": [], "capabilities": [], "transitions": [], "nodeTypes": [], "dbContexts": [], "dataServices": [] },
+  "installationUnit": { "requiredCapabilities": [], "requiredContracts": {} }
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1, "key": "sample.ui", "name": "Sample UI", "description": "Example composition plugin", "target": "blazor",
+  "dependencies": [{ "key": "sample.backend" }],
+  "routes": [{ "path": "workspace/:id", "component": "Sample.Pages.Workspace", "children": [{"path": "settings", "component": "Sample.Pages.Settings"}] }],
+  "slots": [{ "key": "workspace.sidebar", "componentHost": "Sample.Hosts.Sidebar" }],
+  "contributions": {
+    "components": ["Sample.Components.Details"], "pages": ["Sample.Pages.Workspace"], "themes": ["Sample.Themes.Dark"],
+    "services": ["sample.service"], "capabilities": ["sample.edit"], "transitions": ["sample.save"],
+    "nodeTypes": ["sample.entity"], "dbContexts": ["Sample.Data.Context"], "dataServices": ["sample.data"]
+  }
+}

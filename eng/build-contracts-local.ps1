@@ -41,8 +41,11 @@ try {
     $build = Invoke-DotNetCapture @('build', 'Core.slnx', '-c', 'Release', '-m:1', "-p:ContractsVersion=$Version", '-p:EnableTrimAnalyzer=true') (Join-Path $staging 'trim-analysis.log')
     $trimWarnings = @([regex]::Matches($build, 'warning IL\d+')).Count
     if ($trimWarnings -ne 0) { throw "The trim analysis reported $trimWarnings warning(s); the candidate requires zero." }
-    Invoke-DotNet @('test', '--project', 'src/test/LowlandTech.Core.Tests.csproj', '-c', 'Release', '--no-build')
+    # The candidate is packed before the tests run, so a test that reads the
+    # candidate observes the artifact this release publishes. The package
+    # reaches the feed only after the tests and the isolated consumer pass.
     Invoke-DotNet @('pack', 'src/contracts/LowlandTech.Core.Contracts.csproj', '-c', 'Release', '--no-build', "-p:ContractsVersion=$Version", '-o', $staging)
+    Invoke-DotNet @('test', '--project', 'src/test/LowlandTech.Core.Tests.csproj', '-c', 'Release', '--no-build')
     $packages = @(Get-ChildItem -LiteralPath $staging -Filter '*.nupkg')
     if ($packages.Count -ne 1) { throw 'Expected exactly the contract package.' }
     $package = $packages[0]

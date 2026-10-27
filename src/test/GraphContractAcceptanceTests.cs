@@ -88,6 +88,13 @@ public sealed class GraphContractAcceptanceTests
         foreach (var reserved in new[] { "PluginKey", "PluginRevision", "PluginScope", "PluginImplementationKind", "PluginLifetime", "PluginImplementationBinding", "PluginProvenance", "ContentHash", "PluginDescriptor" })
             published.ShouldNotContain(reserved);
 
+        // The Plugins host publishes the manifest model it reads and writes
+        // today under these names. The shared package must publish no type
+        // under one of them, or a consumer that references both packages ends
+        // up with two public types with the same simple name.
+        foreach (var declared in new[] { "PluginManifest", "PluginContributions", "PluginTarget", "PluginInstallationUnit", "PluginDependency", "PluginRoute", "PluginSlot", "PluginComponentPlacement", "PluginClientAsset", "PluginClientAssets", "PluginPackageDescriptor" })
+            published.ShouldNotContain(declared);
+
         // The names of the previous contract version duplicated a host contract
         // under another name, so they stay reserved as well.
         foreach (var previous in new[] { "PluginContentHash", "PluginIdentity" })
