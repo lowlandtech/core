@@ -8,7 +8,7 @@ existing EF Core/crypto dependencies; this extraction does not redesign them.
 - src/lib: library source.
 - src/test: focused extraction regression tests.
 - src/consumer: isolated PackageReference smoke consumer.
-- [Extraction provenance and cutover](docs/extraction.md).
+- [Extraction provenance and cutover](docs/workitems/done/CORE0001.US01.SC01.verified-package-producer.md).
 - [Roadmap](docs/workitems/README.md).
 
 Build with .NET SDK 10.0.300:
@@ -27,3 +27,6 @@ Public NuGet/CI feed provisioning remains separate from local-feed verification.
 Earlier public Core commits remain in Git history. Current source was imported
 as a reviewed snapshot from private Foundry; private source history is not
 reachable from this public branch. Existing package versions stay immutable.
+
+Shared operating guidance lives in the workspace skills; native Core build,
+extraction verification and package-consumer tools remain under eng/.

@@ -1,20 +1,9 @@
-# Core extraction roadmap
+| Milestone | Title | Gate |
+|---|---|---|
+| M1 | Standalone canonical Core producer | Package/Consumer |
+| M2 | Producer retirement and source-owned consumer cutover | Producer/Consumer |
 
-Owner core denotes the source repository, not a new registered agent or automation.
-Coordinator: coordinator-1. Consumer lanes retain their implementation ownership.
-The existing library is extracted without an API redesign; local package proof
-and later consumer migration are separate outcomes.
-
-| Work | Title | Owner | Depends on | Status |
-| --- | --- | --- | --- | --- |
-| M1-001 | [Standalone source and verified package producer](../../README.md) | core | None | done |
-| M2-001 | [Retire legacy producer and coordinate consumer cutover](../extraction.md) | core | M1-001 | blocked |
-| M2-X01 | [Components exact batch repack and shared-feed consumer](../../../components/docs/evidence/dependency-closure-repair.md) | components | Verified new Core package | blocked (external) |
-| M2-X02 | Builder re-vendor and Coder package adoption | builder/coder | Verified producer/Components closure | blocked (external) |
-
-These source-owned external prerequisites are technical artifacts, not
-cross-coordinator acknowledgement gates. No existing lane workitem/claim is
-reowned here. Exact versions and checks are recorded in extraction.md.
-
-Foundry publisher retirement is draft [PR #185](https://github.com/lowlandtech/foundry/pull/185); its local guard is verified, remote merge remains review.
-Verified immutable local Core package: 2026.10.3-20261025011050827978557.
+| Work | Scope | Title | Priority | Lane | Depends on | Status | Refined |
+|---|---|---|---|---|---|---|---|
+| M1-001 | CORE0001-US01-SC01 | [Standalone source and verified package producer](done/CORE0001.US01.SC01.verified-package-producer.md) | P0 | core | None | done | true |
+| M2-001 | CORE0001-US02-SC01 | [Retire legacy producer and coordinate consumer cutover](todo/CORE0001.US02.SC01.producer-retirement-and-consumer-cutover.md) | P0 | core | M1-001 | blocked | false |
