@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <!-- The consumer is package only: it reaches the contract through a
+         PackageReference and never through a sibling ProjectReference. -->
+    <RootNamespace>LowlandTech.Core.ContractsConsumer</RootNamespace>
+    <AssemblyName>ContractsConsumer</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="LowlandTech.Core.Contracts" Version="[$(ContractsPackageVersion)]" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Fixtures\harness-list-main-intents.json" LogicalName="harness-list-main-intents.json" />
+  </ItemGroup>
+
+</Project>

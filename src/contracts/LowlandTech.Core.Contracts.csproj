@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>LowlandTech.Core.Contracts</RootNamespace>
+    <AssemblyName>LowlandTech.Core.Contracts</AssemblyName>
+    <IsPackable>true</IsPackable>
+    <PackageId>LowlandTech.Core.Contracts</PackageId>
+    <!-- The contract package has its own version line. The compatibility package
+         release sets one Version for the whole solution, so the contract derives
+         its package and assembly version from its own property and stays on
+         2026.10.4 even when the solution is built with another version. -->
+    <ContractsVersion Condition="'$(ContractsVersion)' == ''">2026.10.4</ContractsVersion>
+    <PackageVersion>$(ContractsVersion)</PackageVersion>
+    <AssemblyVersion>2026.10.4.0</AssemblyVersion>
+    <FileVersion>2026.10.4.0</FileVersion>
+    <InformationalVersion>$(ContractsVersion)</InformationalVersion>
+    <!-- The contract assembly is data only and is consumed by trimmed hosts, so it
+         declares trimmability and runs the trim analyzer over its own source. The
+         JSON surface uses a source generated context, so no reflection based
+         serialization is reachable. -->
+    <IsTrimmable>true</IsTrimmable>
+    <EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+    <Authors>LowlandTech</Authors>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <Description>Portable, data-only graph and transition contract shared by hosts and external data-defined plugins.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\icon.png" Pack="true" PackagePath="\" />
+    <None Include="README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
+
+</Project>

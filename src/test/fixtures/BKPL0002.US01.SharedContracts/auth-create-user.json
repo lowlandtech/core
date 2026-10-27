@@ -1,0 +1,437 @@
+{
+  "fixture": "auth-create-user",
+  "source": "src/api/Plugins/Auth/Transitions/create-user.yml",
+  "document": {
+    "schema": "gs.transition/v1",
+    "kind": "transition",
+    "plugin": "Auth",
+    "key": "create-user",
+    "source": "session",
+    "edgeType": "create",
+    "target": "user",
+    "capability": "auth.create-user",
+    "aspects": {
+      "useCase": {
+        "intent": "Execute (session) --create--\u003E (user)",
+        "cases": [
+          {
+            "key": "success",
+            "outcome": "Succeeded",
+            "diagnostic": null,
+            "input": {
+              "name": "alice",
+              "credential": "acceptance-password",
+              "sourceId": "session"
+            },
+            "given": [],
+            "cancelled": false
+          },
+          {
+            "key": "duplicate",
+            "outcome": "InvalidOperationException",
+            "diagnostic": null,
+            "input": {
+              "name": "alice",
+              "credential": "acceptance-password",
+              "sourceId": "session"
+            },
+            "given": [
+              {
+                "capability": "auth.create-user",
+                "input": {
+                  "sourceId": "session",
+                  "name": "alice",
+                  "credential": "acceptance-password"
+                }
+              }
+            ],
+            "cancelled": false
+          },
+          {
+            "key": "missing-name",
+            "outcome": "ArgumentException",
+            "diagnostic": null,
+            "input": {
+              "credential": "acceptance-password",
+              "sourceId": "session"
+            },
+            "given": [],
+            "cancelled": false
+          },
+          {
+            "key": "missing-credential",
+            "outcome": "ArgumentException",
+            "diagnostic": null,
+            "input": {
+              "name": "alice",
+              "sourceId": "session"
+            },
+            "given": [],
+            "cancelled": false
+          },
+          {
+            "key": "whitespace-name",
+            "outcome": "ArgumentException",
+            "diagnostic": null,
+            "input": {
+              "name": "   ",
+              "credential": "acceptance-password",
+              "sourceId": "session"
+            },
+            "given": [],
+            "cancelled": false
+          }
+        ]
+      },
+      "intents": null,
+      "intent": "user-create",
+      "inputs": {
+        "sourceId": {
+          "type": "string",
+          "required": true,
+          "minLength": null,
+          "maxLength": 36,
+          "format": "uuid",
+          "description": "Selected session node",
+          "secret": false,
+          "presentation": null
+        },
+        "name": {
+          "type": "string",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 128,
+          "format": null,
+          "description": "Username",
+          "secret": false,
+          "presentation": null
+        },
+        "credential": {
+          "type": "string",
+          "required": true,
+          "minLength": 1,
+          "maxLength": 1024,
+          "format": null,
+          "description": "User password",
+          "secret": true,
+          "presentation": null
+        }
+      },
+      "layout": null,
+      "container": null,
+      "authentication": "optional",
+      "triggers": null,
+      "stateMachine": {
+        "initial": "ready",
+        "states": [
+          "ready",
+          "completed"
+        ],
+        "transitions": [
+          {
+            "key": "create-user",
+            "from": "ready",
+            "to": "completed",
+            "inputSchema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "required": true,
+                  "minLength": null,
+                  "maxLength": 36,
+                  "format": "uuid",
+                  "description": "Selected session node",
+                  "secret": false,
+                  "presentation": null
+                },
+                "name": {
+                  "type": "string",
+                  "required": true,
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "format": null,
+                  "description": "Username",
+                  "secret": false,
+                  "presentation": null
+                },
+                "credential": {
+                  "type": "string",
+                  "required": true,
+                  "minLength": 1,
+                  "maxLength": 1024,
+                  "format": null,
+                  "description": "User password",
+                  "secret": true,
+                  "presentation": null
+                }
+              },
+              "required": [
+                "sourceId",
+                "name",
+                "credential"
+              ]
+            },
+            "preconditions": [
+              {
+                "key": "source.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/source/type"
+                    },
+                    "session"
+                  ]
+                }
+              },
+              {
+                "key": "edge.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/edge/type"
+                    },
+                    "create"
+                  ]
+                }
+              }
+            ],
+            "steps": [
+              {
+                "op": "execute"
+              }
+            ],
+            "postconditions": [
+              {
+                "key": "state.advanced",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/state/machineState"
+                    },
+                    "completed"
+                  ]
+                }
+              },
+              {
+                "key": "target.matches",
+                "expression": {
+                  "op": "or",
+                  "args": [
+                    {
+                      "op": "equal",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/context/phase"
+                        },
+                        "requested"
+                      ]
+                    },
+                    {
+                      "op": "equal",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/state/selected/type"
+                        },
+                        "user"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "intent": "user-create",
+    "source": "session",
+    "edgeType": "create",
+    "target": "user",
+    "preconditions": {
+      "sourceId": {
+        "type": "string",
+        "required": true,
+        "minLength": null,
+        "maxLength": 36,
+        "format": "uuid",
+        "description": "Selected session node",
+        "secret": false,
+        "presentation": null
+      },
+      "name": {
+        "type": "string",
+        "required": true,
+        "minLength": 1,
+        "maxLength": 128,
+        "format": null,
+        "description": "Username",
+        "secret": false,
+        "presentation": null
+      },
+      "credential": {
+        "type": "string",
+        "required": true,
+        "minLength": 1,
+        "maxLength": 1024,
+        "format": null,
+        "description": "User password",
+        "secret": true,
+        "presentation": null
+      }
+    },
+    "layout": null,
+    "container": null,
+    "authentication": "optional",
+    "triggers": {
+      "::start": {
+        "effect": "server"
+      },
+      "::end": {
+        "effect": "graph.persist"
+      }
+    },
+    "stateMachine": {
+      "initial": "ready",
+      "states": [
+        "ready",
+        "completed"
+      ],
+      "transitions": [
+        {
+          "key": "create-user",
+          "from": "ready",
+          "to": "completed",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "required": true,
+                "minLength": null,
+                "maxLength": 36,
+                "format": "uuid",
+                "description": "Selected session node",
+                "secret": false,
+                "presentation": null
+              },
+              "name": {
+                "type": "string",
+                "required": true,
+                "minLength": 1,
+                "maxLength": 128,
+                "format": null,
+                "description": "Username",
+                "secret": false,
+                "presentation": null
+              },
+              "credential": {
+                "type": "string",
+                "required": true,
+                "minLength": 1,
+                "maxLength": 1024,
+                "format": null,
+                "description": "User password",
+                "secret": true,
+                "presentation": null
+              }
+            },
+            "required": [
+              "sourceId",
+              "name",
+              "credential"
+            ]
+          },
+          "preconditions": [
+            {
+              "key": "source.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/source/type"
+                  },
+                  "session"
+                ]
+              }
+            },
+            {
+              "key": "edge.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/edge/type"
+                  },
+                  "create"
+                ]
+              }
+            }
+          ],
+          "steps": [
+            {
+              "op": "execute"
+            }
+          ],
+          "postconditions": [
+            {
+              "key": "state.advanced",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/state/machineState"
+                  },
+                  "completed"
+                ]
+              }
+            },
+            {
+              "key": "target.matches",
+              "expression": {
+                "op": "or",
+                "args": [
+                  {
+                    "op": "equal",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/context/phase"
+                      },
+                      "requested"
+                    ]
+                  },
+                  {
+                    "op": "equal",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/state/selected/type"
+                      },
+                      "user"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

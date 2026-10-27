@@ -1,0 +1,320 @@
+{
+  "fixture": "harness-has-layout",
+  "source": "src/api/Plugins/Harness/Transitions/has-layout.yml",
+  "document": {
+    "schema": "gs.transition/v1",
+    "kind": "transition",
+    "plugin": "Harness",
+    "key": "has-layout",
+    "source": "client.harness",
+    "edgeType": "has-layout",
+    "target": "layout",
+    "capability": "component.access",
+    "aspects": {
+      "useCase": {
+        "intent": "Traverse the Harness has-layout definition",
+        "cases": [
+          {
+            "key": "success",
+            "outcome": "Succeeded",
+            "diagnostic": null,
+            "input": {
+              "sourceId": "client.harness"
+            },
+            "given": [],
+            "cancelled": false
+          }
+        ]
+      },
+      "intents": null,
+      "intent": "has-layout",
+      "inputs": {
+        "sourceId": {
+          "type": "string",
+          "required": true,
+          "minLength": null,
+          "maxLength": null,
+          "format": "uuid",
+          "description": null,
+          "secret": false,
+          "presentation": null
+        }
+      },
+      "layout": {
+        "cols": 2,
+        "rows": 3,
+        "columns": [
+          "224px",
+          "minmax(0, 1fr)"
+        ],
+        "rowSizes": [
+          "auto",
+          "minmax(0, 1fr)",
+          "auto"
+        ]
+      },
+      "container": null,
+      "authentication": "required",
+      "triggers": null,
+      "stateMachine": {
+        "initial": "ready",
+        "states": [
+          "ready",
+          "completed"
+        ],
+        "transitions": [
+          {
+            "key": "has-layout",
+            "from": "ready",
+            "to": "completed",
+            "inputSchema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "required": true,
+                  "minLength": null,
+                  "maxLength": null,
+                  "format": "uuid",
+                  "description": null,
+                  "secret": false,
+                  "presentation": null
+                }
+              },
+              "required": [
+                "sourceId"
+              ]
+            },
+            "preconditions": [
+              {
+                "key": "source.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/source/type"
+                    },
+                    "client.harness"
+                  ]
+                }
+              },
+              {
+                "key": "edge.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/edge/type"
+                    },
+                    "has-layout"
+                  ]
+                }
+              }
+            ],
+            "steps": [
+              {
+                "op": "execute"
+              }
+            ],
+            "postconditions": [
+              {
+                "key": "state.advanced",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/state/machineState"
+                    },
+                    "completed"
+                  ]
+                }
+              },
+              {
+                "key": "target.matches",
+                "expression": {
+                  "op": "or",
+                  "args": [
+                    {
+                      "op": "equal",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/context/phase"
+                        },
+                        "requested"
+                      ]
+                    },
+                    {
+                      "op": "equal",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/state/selected/type"
+                        },
+                        "layout"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "intent": "has-layout",
+    "source": "client.harness",
+    "edgeType": "has-layout",
+    "target": "layout",
+    "preconditions": {
+      "sourceId": {
+        "type": "string",
+        "required": true,
+        "minLength": null,
+        "maxLength": null,
+        "format": "uuid",
+        "description": null,
+        "secret": false,
+        "presentation": null
+      }
+    },
+    "layout": {
+      "cols": 2,
+      "rows": 3,
+      "columns": [
+        "224px",
+        "minmax(0, 1fr)"
+      ],
+      "rowSizes": [
+        "auto",
+        "minmax(0, 1fr)",
+        "auto"
+      ]
+    },
+    "container": null,
+    "authentication": "required",
+    "triggers": {
+      "::start": {
+        "effect": "graph.walk"
+      },
+      "::end": {
+        "effect": "graph.persist"
+      }
+    },
+    "stateMachine": {
+      "initial": "ready",
+      "states": [
+        "ready",
+        "completed"
+      ],
+      "transitions": [
+        {
+          "key": "has-layout",
+          "from": "ready",
+          "to": "completed",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "required": true,
+                "minLength": null,
+                "maxLength": null,
+                "format": "uuid",
+                "description": null,
+                "secret": false,
+                "presentation": null
+              }
+            },
+            "required": [
+              "sourceId"
+            ]
+          },
+          "preconditions": [
+            {
+              "key": "source.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/source/type"
+                  },
+                  "client.harness"
+                ]
+              }
+            },
+            {
+              "key": "edge.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/edge/type"
+                  },
+                  "has-layout"
+                ]
+              }
+            }
+          ],
+          "steps": [
+            {
+              "op": "execute"
+            }
+          ],
+          "postconditions": [
+            {
+              "key": "state.advanced",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/state/machineState"
+                  },
+                  "completed"
+                ]
+              }
+            },
+            {
+              "key": "target.matches",
+              "expression": {
+                "op": "or",
+                "args": [
+                  {
+                    "op": "equal",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/context/phase"
+                      },
+                      "requested"
+                    ]
+                  },
+                  {
+                    "op": "equal",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/state/selected/type"
+                      },
+                      "layout"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,430 @@
+{
+  "fixture": "harness-has-container",
+  "source": "src/api/Plugins/Harness/Transitions/has-container-main.yml",
+  "document": {
+    "schema": "gs.transition/v1",
+    "kind": "transition",
+    "plugin": "Harness",
+    "key": "has-container-main",
+    "source": "client.harness",
+    "edgeType": "has-container",
+    "target": "main",
+    "capability": "component.access",
+    "aspects": {
+      "useCase": {
+        "intent": "Traverse the Harness has-container definition",
+        "cases": [
+          {
+            "key": "success",
+            "outcome": "Succeeded",
+            "diagnostic": null,
+            "input": {
+              "sourceId": "client.harness"
+            },
+            "given": [],
+            "cancelled": false
+          }
+        ]
+      },
+      "intents": null,
+      "intent": "has-container-main",
+      "inputs": {
+        "sourceId": {
+          "type": "string",
+          "required": true,
+          "minLength": null,
+          "maxLength": null,
+          "format": "uuid",
+          "description": null,
+          "secret": false,
+          "presentation": null
+        }
+      },
+      "layout": null,
+      "container": {
+        "renderer": "pages",
+        "colStart": 1,
+        "colEnd": 2,
+        "rowStart": 1,
+        "rowEnd": 3,
+        "pages": [
+          {
+            "path": "/workspace",
+            "renderer": "workspace",
+            "title": "Your workspace",
+            "userRequired": false,
+            "anonymous": false
+          },
+          {
+            "path": "/keys",
+            "renderer": "client-keys",
+            "title": "Client keys",
+            "userRequired": true,
+            "anonymous": false
+          },
+          {
+            "path": "/agents",
+            "renderer": "agent-sessions",
+            "title": "Agent sessions",
+            "userRequired": false,
+            "anonymous": true
+          },
+          {
+            "path": "/settings",
+            "renderer": "user-settings",
+            "title": "User settings",
+            "userRequired": true,
+            "anonymous": false
+          },
+          {
+            "path": "/clients/:client",
+            "renderer": "client-flows",
+            "title": "Client flows",
+            "userRequired": false,
+            "anonymous": false
+          },
+          {
+            "path": "/clients/:client/flows/:flow",
+            "renderer": "client-flows",
+            "title": "Client function",
+            "userRequired": false,
+            "anonymous": false
+          },
+          {
+            "path": "/clients/:client/:collection",
+            "renderer": "client-flows",
+            "title": "Client collection",
+            "userRequired": false,
+            "anonymous": false
+          },
+          {
+            "path": "/clients/:client/:collection/:record",
+            "renderer": "client-flows",
+            "title": "Client function",
+            "userRequired": false,
+            "anonymous": false
+          }
+        ],
+        "mobileOrder": null,
+        "mobileCollapsible": false,
+        "title": null
+      },
+      "authentication": "required",
+      "triggers": null,
+      "stateMachine": {
+        "initial": "ready",
+        "states": [
+          "ready",
+          "completed"
+        ],
+        "transitions": [
+          {
+            "key": "has-container-main",
+            "from": "ready",
+            "to": "completed",
+            "inputSchema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "required": true,
+                  "minLength": null,
+                  "maxLength": null,
+                  "format": "uuid",
+                  "description": null,
+                  "secret": false,
+                  "presentation": null
+                }
+              },
+              "required": [
+                "sourceId"
+              ]
+            },
+            "preconditions": [
+              {
+                "key": "source.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/source/type"
+                    },
+                    "client.harness"
+                  ]
+                }
+              },
+              {
+                "key": "edge.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/edge/type"
+                    },
+                    "has-container"
+                  ]
+                }
+              }
+            ],
+            "steps": [
+              {
+                "op": "execute"
+              }
+            ],
+            "postconditions": [
+              {
+                "key": "state.advanced",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/state/machineState"
+                    },
+                    "completed"
+                  ]
+                }
+              },
+              {
+                "key": "target.matches",
+                "expression": {
+                  "op": "or",
+                  "args": [
+                    {
+                      "op": "equal",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/context/phase"
+                        },
+                        "requested"
+                      ]
+                    },
+                    {
+                      "op": "equal",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/state/selected/type"
+                        },
+                        "main"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "intent": "has-container-main",
+    "source": "client.harness",
+    "edgeType": "has-container",
+    "target": "main",
+    "preconditions": {
+      "sourceId": {
+        "type": "string",
+        "required": true,
+        "minLength": null,
+        "maxLength": null,
+        "format": "uuid",
+        "description": null,
+        "secret": false,
+        "presentation": null
+      }
+    },
+    "layout": null,
+    "container": {
+      "renderer": "pages",
+      "colStart": 1,
+      "colEnd": 2,
+      "rowStart": 1,
+      "rowEnd": 3,
+      "pages": [
+        {
+          "path": "/workspace",
+          "renderer": "workspace",
+          "title": "Your workspace",
+          "userRequired": false,
+          "anonymous": false
+        },
+        {
+          "path": "/keys",
+          "renderer": "client-keys",
+          "title": "Client keys",
+          "userRequired": true,
+          "anonymous": false
+        },
+        {
+          "path": "/agents",
+          "renderer": "agent-sessions",
+          "title": "Agent sessions",
+          "userRequired": false,
+          "anonymous": true
+        },
+        {
+          "path": "/settings",
+          "renderer": "user-settings",
+          "title": "User settings",
+          "userRequired": true,
+          "anonymous": false
+        },
+        {
+          "path": "/clients/:client",
+          "renderer": "client-flows",
+          "title": "Client flows",
+          "userRequired": false,
+          "anonymous": false
+        },
+        {
+          "path": "/clients/:client/flows/:flow",
+          "renderer": "client-flows",
+          "title": "Client function",
+          "userRequired": false,
+          "anonymous": false
+        },
+        {
+          "path": "/clients/:client/:collection",
+          "renderer": "client-flows",
+          "title": "Client collection",
+          "userRequired": false,
+          "anonymous": false
+        },
+        {
+          "path": "/clients/:client/:collection/:record",
+          "renderer": "client-flows",
+          "title": "Client function",
+          "userRequired": false,
+          "anonymous": false
+        }
+      ],
+      "mobileOrder": null,
+      "mobileCollapsible": false,
+      "title": null
+    },
+    "authentication": "required",
+    "triggers": {
+      "::start": {
+        "effect": "graph.walk"
+      },
+      "::end": {
+        "effect": "graph.persist"
+      }
+    },
+    "stateMachine": {
+      "initial": "ready",
+      "states": [
+        "ready",
+        "completed"
+      ],
+      "transitions": [
+        {
+          "key": "has-container-main",
+          "from": "ready",
+          "to": "completed",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "required": true,
+                "minLength": null,
+                "maxLength": null,
+                "format": "uuid",
+                "description": null,
+                "secret": false,
+                "presentation": null
+              }
+            },
+            "required": [
+              "sourceId"
+            ]
+          },
+          "preconditions": [
+            {
+              "key": "source.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/source/type"
+                  },
+                  "client.harness"
+                ]
+              }
+            },
+            {
+              "key": "edge.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/edge/type"
+                  },
+                  "has-container"
+                ]
+              }
+            }
+          ],
+          "steps": [
+            {
+              "op": "execute"
+            }
+          ],
+          "postconditions": [
+            {
+              "key": "state.advanced",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/state/machineState"
+                  },
+                  "completed"
+                ]
+              }
+            },
+            {
+              "key": "target.matches",
+              "expression": {
+                "op": "or",
+                "args": [
+                  {
+                    "op": "equal",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/context/phase"
+                      },
+                      "requested"
+                    ]
+                  },
+                  {
+                    "op": "equal",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/state/selected/type"
+                      },
+                      "main"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,277 @@
+{
+  "fixture": "harness-list-main-intents",
+  "source": "src/api/Plugins/Harness/Transitions/list-main-intents.yml",
+  "document": {
+    "schema": "gs.transition/v1",
+    "kind": "transition",
+    "plugin": "Harness",
+    "key": "list-main-intents",
+    "source": "main",
+    "edgeType": "list.intent",
+    "target": "*",
+    "capability": "component.list-intents",
+    "aspects": {
+      "useCase": {
+        "intent": "List the sidebar intents and dynamically permitted client flows for the current session",
+        "cases": [
+          {
+            "key": "success",
+            "outcome": "Succeeded",
+            "diagnostic": null,
+            "input": {
+              "sourceId": "main"
+            },
+            "given": [],
+            "cancelled": false
+          }
+        ]
+      },
+      "intents": [
+        {
+          "key": "workspace",
+          "label": "Workspace",
+          "href": "/workspace",
+          "client": null,
+          "kind": null,
+          "children": null,
+          "flows": null
+        },
+        {
+          "key": "client-keys",
+          "label": "Client Keys",
+          "href": "/keys",
+          "client": null,
+          "kind": null,
+          "children": null,
+          "flows": null
+        },
+        {
+          "key": "agent-sessions",
+          "label": "Agent Sessions",
+          "href": "/agents",
+          "client": null,
+          "kind": null,
+          "children": null,
+          "flows": null
+        },
+        {
+          "key": "clients",
+          "label": "Clients",
+          "href": null,
+          "client": null,
+          "kind": "clients",
+          "children": null,
+          "flows": null
+        }
+      ],
+      "intent": "list.intent",
+      "inputs": {
+        "sourceId": {
+          "type": "string",
+          "required": true,
+          "minLength": null,
+          "maxLength": null,
+          "format": "uuid",
+          "description": null,
+          "secret": false,
+          "presentation": null
+        }
+      },
+      "layout": null,
+      "container": null,
+      "authentication": "required",
+      "triggers": null,
+      "stateMachine": {
+        "initial": "ready",
+        "states": [
+          "ready",
+          "completed"
+        ],
+        "transitions": [
+          {
+            "key": "list-main-intents",
+            "from": "ready",
+            "to": "completed",
+            "inputSchema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "required": true,
+                  "minLength": null,
+                  "maxLength": null,
+                  "format": "uuid",
+                  "description": null,
+                  "secret": false,
+                  "presentation": null
+                }
+              },
+              "required": [
+                "sourceId"
+              ]
+            },
+            "preconditions": [
+              {
+                "key": "source.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/source/type"
+                    },
+                    "main"
+                  ]
+                }
+              },
+              {
+                "key": "edge.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/edge/type"
+                    },
+                    "list.intent"
+                  ]
+                }
+              }
+            ],
+            "steps": [
+              {
+                "op": "execute"
+              }
+            ],
+            "postconditions": [
+              {
+                "key": "state.advanced",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/state/machineState"
+                    },
+                    "completed"
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "intent": "list.intent",
+    "source": "main",
+    "edgeType": "list.intent",
+    "target": "*",
+    "preconditions": {
+      "sourceId": {
+        "type": "string",
+        "required": true,
+        "minLength": null,
+        "maxLength": null,
+        "format": "uuid",
+        "description": null,
+        "secret": false,
+        "presentation": null
+      }
+    },
+    "layout": null,
+    "container": null,
+    "authentication": "required",
+    "triggers": {
+      "::start": {
+        "effect": "component.list"
+      },
+      "::end": {
+        "effect": "graph.persist"
+      }
+    },
+    "stateMachine": {
+      "initial": "ready",
+      "states": [
+        "ready",
+        "completed"
+      ],
+      "transitions": [
+        {
+          "key": "list-main-intents",
+          "from": "ready",
+          "to": "completed",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "required": true,
+                "minLength": null,
+                "maxLength": null,
+                "format": "uuid",
+                "description": null,
+                "secret": false,
+                "presentation": null
+              }
+            },
+            "required": [
+              "sourceId"
+            ]
+          },
+          "preconditions": [
+            {
+              "key": "source.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/source/type"
+                  },
+                  "main"
+                ]
+              }
+            },
+            {
+              "key": "edge.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/edge/type"
+                  },
+                  "list.intent"
+                ]
+              }
+            }
+          ],
+          "steps": [
+            {
+              "op": "execute"
+            }
+          ],
+          "postconditions": [
+            {
+              "key": "state.advanced",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/state/machineState"
+                  },
+                  "completed"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

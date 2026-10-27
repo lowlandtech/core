@@ -1,0 +1,430 @@
+{
+  "fixture": "builder-dummy-prepare",
+  "source": "src/api/Plugins/Builder/Transitions/dummy-prepare.yml",
+  "document": {
+    "schema": "gs.transition/v1",
+    "kind": "transition",
+    "plugin": "Builder",
+    "key": "dummy-prepare",
+    "source": "builder",
+    "edgeType": "prepare",
+    "target": "builder.dummy-ready",
+    "capability": "client.dummy-step",
+    "aspects": {
+      "useCase": {
+        "intent": "Walk (builder) --prepare--\u003E (builder.dummy-ready)",
+        "cases": [
+          {
+            "key": "success",
+            "outcome": "Succeeded",
+            "diagnostic": null,
+            "input": {
+              "sourceId": "builder"
+            },
+            "given": [],
+            "cancelled": false
+          }
+        ]
+      },
+      "intents": null,
+      "intent": "dummy-prepare",
+      "inputs": {
+        "sourceId": {
+          "type": "string",
+          "required": true,
+          "minLength": null,
+          "maxLength": null,
+          "format": "uuid",
+          "description": null,
+          "secret": false,
+          "presentation": null
+        },
+        "projectName": {
+          "type": "string",
+          "required": false,
+          "minLength": null,
+          "maxLength": 128,
+          "format": null,
+          "description": null,
+          "secret": false,
+          "presentation": null
+        },
+        "quantity": {
+          "type": "integer",
+          "required": false,
+          "minLength": null,
+          "maxLength": null,
+          "format": null,
+          "description": null,
+          "secret": false,
+          "presentation": null
+        }
+      },
+      "layout": null,
+      "container": null,
+      "authentication": "required",
+      "triggers": null,
+      "stateMachine": {
+        "initial": "ready",
+        "states": [
+          "ready",
+          "completed"
+        ],
+        "transitions": [
+          {
+            "key": "dummy-prepare",
+            "from": "ready",
+            "to": "completed",
+            "inputSchema": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "sourceId": {
+                  "type": "string",
+                  "required": true,
+                  "minLength": null,
+                  "maxLength": null,
+                  "format": "uuid",
+                  "description": null,
+                  "secret": false,
+                  "presentation": null
+                },
+                "projectName": {
+                  "type": "string",
+                  "required": false,
+                  "minLength": null,
+                  "maxLength": 128,
+                  "format": null,
+                  "description": null,
+                  "secret": false,
+                  "presentation": null
+                },
+                "quantity": {
+                  "type": "integer",
+                  "required": false,
+                  "minLength": null,
+                  "maxLength": null,
+                  "format": null,
+                  "description": null,
+                  "secret": false,
+                  "presentation": null
+                }
+              },
+              "required": [
+                "sourceId"
+              ]
+            },
+            "preconditions": [
+              {
+                "key": "source.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/source/type"
+                    },
+                    "builder"
+                  ]
+                }
+              },
+              {
+                "key": "edge.matches",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/context/edge/type"
+                    },
+                    "prepare"
+                  ]
+                }
+              },
+              {
+                "key": "quantity.positive",
+                "expression": {
+                  "op": "or",
+                  "args": [
+                    {
+                      "op": "not",
+                      "args": [
+                        {
+                          "op": "exists",
+                          "path": "/input/quantity"
+                        }
+                      ]
+                    },
+                    {
+                      "op": "greater",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/input/quantity"
+                        },
+                        0
+                      ]
+                    }
+                  ]
+                }
+              }
+            ],
+            "steps": [
+              {
+                "op": "execute"
+              }
+            ],
+            "postconditions": [
+              {
+                "key": "state.advanced",
+                "expression": {
+                  "op": "equal",
+                  "args": [
+                    {
+                      "op": "get",
+                      "path": "/state/machineState"
+                    },
+                    "completed"
+                  ]
+                }
+              },
+              {
+                "key": "target.matches",
+                "expression": {
+                  "op": "or",
+                  "args": [
+                    {
+                      "op": "equal",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/context/phase"
+                        },
+                        "requested"
+                      ]
+                    },
+                    {
+                      "op": "equal",
+                      "args": [
+                        {
+                          "op": "get",
+                          "path": "/state/selected/type"
+                        },
+                        "builder.dummy-ready"
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "intent": "dummy-prepare",
+    "source": "builder",
+    "edgeType": "prepare",
+    "target": "builder.dummy-ready",
+    "preconditions": {
+      "sourceId": {
+        "type": "string",
+        "required": true,
+        "minLength": null,
+        "maxLength": null,
+        "format": "uuid",
+        "description": null,
+        "secret": false,
+        "presentation": null
+      },
+      "projectName": {
+        "type": "string",
+        "required": false,
+        "minLength": null,
+        "maxLength": 128,
+        "format": null,
+        "description": null,
+        "secret": false,
+        "presentation": null
+      },
+      "quantity": {
+        "type": "integer",
+        "required": false,
+        "minLength": null,
+        "maxLength": null,
+        "format": null,
+        "description": null,
+        "secret": false,
+        "presentation": null
+      }
+    },
+    "layout": null,
+    "container": null,
+    "authentication": "required",
+    "triggers": {
+      "::start": {
+        "effect": "graph.walk"
+      },
+      "::end": {
+        "effect": "graph.persist"
+      }
+    },
+    "stateMachine": {
+      "initial": "ready",
+      "states": [
+        "ready",
+        "completed"
+      ],
+      "transitions": [
+        {
+          "key": "dummy-prepare",
+          "from": "ready",
+          "to": "completed",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "sourceId": {
+                "type": "string",
+                "required": true,
+                "minLength": null,
+                "maxLength": null,
+                "format": "uuid",
+                "description": null,
+                "secret": false,
+                "presentation": null
+              },
+              "projectName": {
+                "type": "string",
+                "required": false,
+                "minLength": null,
+                "maxLength": 128,
+                "format": null,
+                "description": null,
+                "secret": false,
+                "presentation": null
+              },
+              "quantity": {
+                "type": "integer",
+                "required": false,
+                "minLength": null,
+                "maxLength": null,
+                "format": null,
+                "description": null,
+                "secret": false,
+                "presentation": null
+              }
+            },
+            "required": [
+              "sourceId"
+            ]
+          },
+          "preconditions": [
+            {
+              "key": "source.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/source/type"
+                  },
+                  "builder"
+                ]
+              }
+            },
+            {
+              "key": "edge.matches",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/context/edge/type"
+                  },
+                  "prepare"
+                ]
+              }
+            },
+            {
+              "key": "quantity.positive",
+              "expression": {
+                "op": "or",
+                "args": [
+                  {
+                    "op": "not",
+                    "args": [
+                      {
+                        "op": "exists",
+                        "path": "/input/quantity"
+                      }
+                    ]
+                  },
+                  {
+                    "op": "greater",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/input/quantity"
+                      },
+                      0
+                    ]
+                  }
+                ]
+              }
+            }
+          ],
+          "steps": [
+            {
+              "op": "execute"
+            }
+          ],
+          "postconditions": [
+            {
+              "key": "state.advanced",
+              "expression": {
+                "op": "equal",
+                "args": [
+                  {
+                    "op": "get",
+                    "path": "/state/machineState"
+                  },
+                  "completed"
+                ]
+              }
+            },
+            {
+              "key": "target.matches",
+              "expression": {
+                "op": "or",
+                "args": [
+                  {
+                    "op": "equal",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/context/phase"
+                      },
+                      "requested"
+                    ]
+                  },
+                  {
+                    "op": "equal",
+                    "args": [
+                      {
+                        "op": "get",
+                        "path": "/state/selected/type"
+                      },
+                      "builder.dummy-ready"
+                    ]
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

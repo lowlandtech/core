@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/contracts/LowlandTech.Core.Contracts.csproj" />
     <Project Path="src/lib/LowlandTech.Core.csproj" />
     <Project Path="src/test/LowlandTech.Core.Tests.csproj" />
   </Folder>
