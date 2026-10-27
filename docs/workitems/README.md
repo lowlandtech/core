@@ -5,6 +5,7 @@
 | M3 | Shared graph and plugin contracts | Package/Consumer |
 | M4 | Legacy Core retirement and EF-free package closure | Package/Consumer |
 | M5 | Agentic-gherkin test layout and regression parity | Test/Layout |
+| M6 | Graph git-flow contract for client surfaces | Contract/Consumer |
 
 | Work | Scope | Title | Priority | Lane | Depends on | Status | Refined |
 |---|---|---|---|---|---|---|---|
@@ -14,3 +15,4 @@
 | M3-002 | CORE0002-US02-SC01 | [Centralize portable plugin contribution contract](doing/CORE0002.US02.SC01.portable-plugin-contribution-contract.md) | P0 | core | M3-001 | doing | true |
 | M4-001 | CORE0003-US01-SC01 | [Retire unused legacy Core APIs and EF dependency](todo/CORE0003.US01.SC01.legacy-api-and-ef-retirement.md) | P1 | core | M2-001, M3-001, M3-002 | blocked | false |
 | M5-001 | CORE0004-US01-SC01 | [Bring Core tests into the agentic-gherkin layout](todo/CORE0004.US01.SC01.agentic-gherkin-test-layout.md) | P1 | core | M1-001 | todo | false |
+| M6-001 | CORE0005-US01-SC01 | [Publish merge-request and feature-proposal states for clients](todo/CORE0005.US01.SC01.git-flow-client-contract.md) | P0 | core | M1-001 | todo | true |
