@@ -16,5 +16,52 @@
     "reviewCommit": "04de74099d2a0273d0bb9543dec945a26064b5f8",
     "draftPullRequest": "https://github.com/lowlandtech/foundry/pull/185",
     "mergeStatus": "pending review"
+  },
+  "producerUniqueness": {
+    "measuredAt": "2026-10-28",
+    "gate": "eng/verify-producers.py",
+    "command": "coordinator.ps1 -Command verify-producers",
+    "acceptanceFact": "src/test/ProducerRetirementAcceptanceTests.cs UAC01_OnlyCorePublishesTheCorePackageIdentities",
+    "exitCode": 2,
+    "exitCodeMeaning": "The Core owned invariants hold while a checkout of another lane can still publish",
+    "canonicalProducers": [
+      {
+        "project": "src/lib/LowlandTech.Core.csproj",
+        "packageId": "LowlandTech.Core",
+        "version": "2026.10.3",
+        "packable": true
+      },
+      {
+        "project": "src/contracts/LowlandTech.Core.Contracts.csproj",
+        "packageId": "LowlandTech.Core.Contracts",
+        "version": "2026.10.3",
+        "packable": true
+      }
+    ],
+    "competingProducers": [
+      {
+        "project": "builder/src/shared/core/LowlandTech.Core.csproj",
+        "packageId": "LowlandTech.Core",
+        "version": "2026.5.29",
+        "owner": "builder"
+      },
+      {
+        "project": "develop/.worktrees/agent3/src/core/LowlandTech.Core.csproj",
+        "packageId": "LowlandTech.Core",
+        "version": "2026.5.29",
+        "owner": "foundry"
+      }
+    ],
+    "retiredProducers": [
+      {
+        "project": "develop/src/core/LowlandTech.Core.csproj",
+        "packageId": "LowlandTech.Core",
+        "version": "2026.5.29",
+        "owner": "foundry",
+        "packable": false,
+        "refusesForcedPack": true
+      }
+    ],
+    "publishedThisStep": false
   }
 }
