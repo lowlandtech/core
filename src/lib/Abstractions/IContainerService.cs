@@ -11,15 +11,27 @@ public interface IContainerService
     /// addresses nested grids — when non-null and resolves to an IsGrid
     /// item on the same canvas, the new item lands under it; otherwise
     /// it lands under the canvas's structural root grid.
+    ///
+    /// <paramref name="itemId"/> is the identity the caller minted for the item.
+    /// When it is given, the item is created with that identity and an item that
+    /// is already there is returned as it is; when it is null the server mints
+    /// the identity. An editor that creates an item while the server is not there
+    /// keeps that identity across a reload.
     /// </summary>
-    Task<ContainerItem?> CreateItemFromComponentAsync(Guid containerId, Guid componentId, int? gridColumnStart, int? gridRowStart, int? gridColumnSpan, int? gridRowSpan, Guid? parentItemId = null, CancellationToken ct = default);
+    Task<ContainerItem?> CreateItemFromComponentAsync(Guid containerId, Guid componentId, int? gridColumnStart, int? gridRowStart, int? gridColumnSpan, int? gridRowSpan, Guid? parentItemId = null, CancellationToken ct = default, Guid? itemId = null);
     /// <summary>
     /// SPEC2100.US46 step 2 — drop a code-decorated component descriptor
     /// onto a canvas. The frontend resolved the descriptor's element name +
     /// default attribute values from <c>[Properties]</c>/<c>[PropertyGrid]</c>
     /// metadata; the API just persists them. No source-Container required.
+    ///
+    /// <paramref name="itemId"/> is the identity the caller minted for the item.
+    /// When it is given, the item is created with that identity and an item that
+    /// is already there is returned as it is; when it is null the server mints
+    /// the identity. An editor that creates an item while the server is not there
+    /// keeps that identity across a reload.
     /// </summary>
-    Task<ContainerItem?> CreateItemFromDescriptorAsync(Guid containerId, string element, IReadOnlyList<DescriptorAttribute> attributes, int? gridColumnStart, int? gridRowStart, int? gridColumnSpan, int? gridRowSpan, Guid? parentItemId = null, CancellationToken ct = default);
+    Task<ContainerItem?> CreateItemFromDescriptorAsync(Guid containerId, string element, IReadOnlyList<DescriptorAttribute> attributes, int? gridColumnStart, int? gridRowStart, int? gridColumnSpan, int? gridRowSpan, Guid? parentItemId = null, CancellationToken ct = default, Guid? itemId = null);
     Task<Container?> GetAsync(Guid id, CancellationToken ct = default);
     Task<Container> CreateAsync(string name, string type, CancellationToken ct = default);
     Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
