@@ -1,0 +1,304 @@
+using System.ComponentModel;
+using System.Diagnostics;
+using System.IO.Compression;
+using System.Reflection;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Text.Json.Nodes;
+using System.Xml.Linq;
+
+namespace LowlandTech.Core.Tests;
+
+/// <summary>
+/// The Core owned half of UAC02 of CORE0001-US02-SC01: the canonical producer
+/// has to pin the generation of ``LowlandTech.Components.Core`` that carries the
+/// startup contract, and the published candidate has to declare that same pin.
+///
+/// The producer pins an exact version, and the isolated consumer of the package
+/// resolves exactly that version. A consumer that also references the
+/// dependency directly resolves the highest version the feed offers instead,
+/// and NuGet compares the versions of this workspace by their numeric parts.
+/// The measurement of that resolution is the repository owned gate at
+/// eng/verify-closure.py.
+///
+/// The gate reports a divergence with exit code 2. That is a finding for the
+/// lane that owns the dependency, not a Core owned failure, so this Fact
+/// requires the Core owned invariants and records the divergence with its
+/// owner.
+/// </summary>
+public sealed class PackageClosureAcceptanceTests
+{
+    /// <summary>The dependency that the canonical producer declares exactly.</summary>
+    private const string DependencyId = "LowlandTech.Components.Core";
+
+    /// <summary>The package identity that the canonical producer publishes.</summary>
+    private const string CorePackageId = "LowlandTech.Core";
+
+    /// <summary>
+    /// The types of the dependency that the trimmed consumer of the producer
+    /// builds against, so a generation without them cannot satisfy the
+    /// producer's own contract.
+    /// </summary>
+    private static readonly string[] StartupContractTypes =
+    {
+        "LowlandTech.Components.Core.ComponentsStartupMap",
+        "LowlandTech.Components.Core.ComponentsCoreStartup",
+        "LowlandTech.Components.Core.ComponentsStartupBinding"
+    };
+
+    [Fact]
+    public void UAC02_TheCanonicalCoreClosurePinsTheStartupContractGeneration()
+    {
+        var repositoryRoot = RepositoryRoot();
+        repositoryRoot.ShouldNotBeNull("The Core repository root was not found from the test output directory.");
+
+        var gate = Path.Combine(repositoryRoot!, "eng", "verify-closure.py");
+        File.Exists(gate).ShouldBeTrue($"The closure gate '{gate}' is missing from the repository.");
+
+        var workspaceRoot = Directory.GetParent(repositoryRoot!)!.FullName;
+        var feedRoot = Path.Combine(workspaceRoot, "packages");
+        var run = RunGate(gate, repositoryRoot!, workspaceRoot);
+
+        // Exit code 0 means the pinned generation wins the resolution and exit
+        // code 2 means the Core owned invariants hold while another generation
+        // of the dependency wins it. Exit code 1 is a Core owned violation and
+        // exit code 3 means the measurement did not run at all.
+        (run.ExitCode is 0 or 2).ShouldBeTrue(
+            $"The closure gate reported exit code {run.ExitCode}. {run.StandardError}{run.StandardOutput}");
+
+        var evidence = JsonNode.Parse(run.StandardOutput)!.AsObject();
+
+        // The producer declares an exact dependency and the measurement found no
+        // Core owned violation of it.
+        var pinned = evidence["pinned"]!.GetValue<string>();
+        pinned.ShouldNotBeNullOrWhiteSpace("The producer does not declare a dependency to pin.");
+        evidence["pinnedIsExact"]!.GetValue<bool>().ShouldBeTrue(
+            "The producer does not declare an exact dependency on the Components.Core package.");
+        evidence["coreViolations"]!.AsArray().Count.ShouldBe(0);
+        evidence["pinnedInFeed"]!.GetValue<bool>().ShouldBeTrue(
+            $"The pinned generation {pinned} is not in the local feed.");
+
+        // The version that wins the resolution is the highest version the feed
+        // offers. The gate reports that version, and this Fact verifies the
+        // report against the versions the gate measured.
+        var available = evidence["availableVersions"]!.AsArray()
+            .Select(node => node!.GetValue<string>()).ToList();
+        available.ShouldNotBeEmpty("The local feed offers no version of the dependency.");
+        var winner = evidence["resolutionWinner"]!.GetValue<string>();
+        winner.ShouldBe(Highest(available), "The gate did not report the highest offered version as the winner.");
+        evidence["winnerMatchesPin"]!.GetValue<bool>().ShouldBe(winner == pinned);
+
+        // A divergence is a finding for the lane that owns the dependency, so it
+        // is named with its owner instead of being reported as a Core failure.
+        foreach (var hazard in evidence["externalHazards"]!.AsArray())
+        {
+            hazard!["kind"]!.GetValue<string>().ShouldBeOneOf("resolution-divergence", "batch-closure-divergence");
+            hazard["owner"]!.GetValue<string>().ShouldBe(evidence["dependencyOwner"]!.GetValue<string>());
+            hazard["owner"]!.GetValue<string>().ShouldNotBe("core");
+            hazard["pinned"]!.GetValue<string>().ShouldBe(pinned);
+            hazard["winner"]!.GetValue<string>().ShouldNotBeNullOrWhiteSpace();
+        }
+
+        // The batch that the Components lane publishes is what a consumer of the
+        // workspace takes, so the gate measures the closure it produces. When
+        // that closure resolves another generation, the divergence is reported.
+        var consumer = evidence["consumerBatch"];
+        consumer.ShouldNotBeNull("The gate did not measure the published batch of the Components lane.");
+        consumer!["package"]!.GetValue<string>().ShouldBe("LowlandTech.Components");
+        consumer["declaredDependency"]!.GetValue<string>().ShouldNotBeNullOrWhiteSpace();
+        if (!consumer["resolvesToPinnedGeneration"]!.GetValue<bool>())
+        {
+            var reported = evidence["externalHazards"]!.AsArray()
+                .Any(node => node!["kind"]!.GetValue<string>() == "batch-closure-divergence");
+            reported.ShouldBeTrue(
+                "The published batch resolves another generation of the dependency and the "
+                + "gate did not report the divergence.");
+        }
+
+        // The pinned generation carries the startup contract that the trimmed
+        // consumer of the producer builds against.
+        var pinnedPackage = Path.Combine(feedRoot, $"{DependencyId}.{pinned}.nupkg");
+        File.Exists(pinnedPackage).ShouldBeTrue($"The pinned package '{pinnedPackage}' is missing from the feed.");
+        var pinnedTypes = PublicTypes(pinnedPackage);
+        foreach (var expected in StartupContractTypes)
+        {
+            pinnedTypes.ShouldContain(expected,
+                $"The pinned generation {pinned} does not carry '{expected}'.");
+        }
+
+        // The published candidate declares the same exact dependency as the
+        // source of the producer, so the closure of the shipped package is the
+        // closure this Fact measured.
+        var candidate = HighestCoreCandidate(feedRoot);
+        candidate.ShouldNotBeNull("The local feed carries no published Core candidate.");
+        var declared = DeclaredDependency(candidate!, DependencyId);
+        declared.ShouldBe($"[{pinned}]",
+            "The published Core candidate does not declare the exact dependency of the producer.");
+    }
+
+    /// <summary>The highest of the given versions, in the NuGet order of this feed.</summary>
+    private static string Highest(IEnumerable<string> versions)
+    {
+        var highest = versions.First();
+        foreach (var candidate in versions.Skip(1))
+        {
+            if (Compare(candidate, highest) > 0) highest = candidate;
+        }
+        return highest;
+    }
+
+    /// <summary>
+    /// The order that NuGet applies to the versions of this feed: the numeric
+    /// parts decide first, so a higher patch number wins over the release label,
+    /// and the release label only separates two versions that share them.
+    /// </summary>
+    private static int Compare(string left, string right)
+    {
+        var first = Parts(left);
+        var second = Parts(right);
+        var numeric = first.Major.CompareTo(second.Major);
+        if (numeric != 0) return numeric;
+        numeric = first.Minor.CompareTo(second.Minor);
+        if (numeric != 0) return numeric;
+        numeric = first.Patch.CompareTo(second.Patch);
+        if (numeric != 0) return numeric;
+        if (first.Release.Length == 0 && second.Release.Length == 0) return 0;
+        if (first.Release.Length == 0) return -1;
+        if (second.Release.Length == 0) return 1;
+        if (long.TryParse(first.Release, out var firstRelease)
+            && long.TryParse(second.Release, out var secondRelease))
+        {
+            return firstRelease.CompareTo(secondRelease);
+        }
+        return string.CompareOrdinal(first.Release, second.Release);
+    }
+
+    /// <summary>The numeric parts and the release label of a version.</summary>
+    private static (int Major, int Minor, int Patch, string Release) Parts(string version)
+    {
+        var numeric = version.Split('-')[0].Split('.');
+        var major = int.TryParse(numeric.ElementAtOrDefault(0), out var first) ? first : 0;
+        var minor = int.TryParse(numeric.ElementAtOrDefault(1), out var second) ? second : 0;
+        var patch = int.TryParse(numeric.ElementAtOrDefault(2), out var third) ? third : 0;
+        var release = version.Contains('-') ? version[(version.IndexOf('-') + 1)..] : string.Empty;
+        return (major, minor, patch, release);
+    }
+
+    /// <summary>The newest published Core candidate in the local feed.</summary>
+    private static string? HighestCoreCandidate(string feedRoot)
+    {
+        if (!Directory.Exists(feedRoot)) return null;
+        var prefix = CorePackageId + ".";
+        var candidates = Directory.GetFiles(feedRoot, $"{CorePackageId}.*.nupkg")
+            .Select(path => (Path: path, Version: Path.GetFileName(path)[prefix.Length..^".nupkg".Length]))
+            .ToList();
+        if (candidates.Count == 0) return null;
+        var highest = candidates[0];
+        foreach (var candidate in candidates.Skip(1))
+        {
+            if (Compare(candidate.Version, highest.Version) > 0) highest = candidate;
+        }
+        return highest.Path;
+    }
+
+    /// <summary>The public types that a package publishes.</summary>
+    private static IReadOnlyList<string> PublicTypes(string packagePath)
+    {
+        using var archive = ZipFile.OpenRead(packagePath);
+        var entry = archive.Entries.FirstOrDefault(candidate =>
+            candidate.FullName.StartsWith("lib/", StringComparison.Ordinal)
+            && candidate.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase));
+        entry.ShouldNotBeNull($"The package '{packagePath}' publishes no library.");
+
+        using var buffer = new MemoryStream();
+        using (var entryStream = entry!.Open()) entryStream.CopyTo(buffer);
+        buffer.Position = 0;
+        using var peReader = new PEReader(buffer);
+        var reader = peReader.GetMetadataReader();
+        var names = new List<string>();
+        foreach (var handle in reader.TypeDefinitions)
+        {
+            var definition = reader.GetTypeDefinition(handle);
+            var visibility = definition.Attributes & TypeAttributes.VisibilityMask;
+            if (visibility != TypeAttributes.Public && visibility != TypeAttributes.NestedPublic) continue;
+            var space = reader.GetString(definition.Namespace);
+            var name = reader.GetString(definition.Name);
+            names.Add(space.Length == 0 ? name : $"{space}.{name}");
+        }
+        return names;
+    }
+
+    /// <summary>The version that a published package declares for a dependency.</summary>
+    private static string? DeclaredDependency(string packagePath, string dependencyId)
+    {
+        using var archive = ZipFile.OpenRead(packagePath);
+        var entry = archive.Entries.FirstOrDefault(candidate =>
+            candidate.FullName.EndsWith(".nuspec", StringComparison.OrdinalIgnoreCase));
+        entry.ShouldNotBeNull($"The package '{packagePath}' carries no nuspec.");
+
+        using var stream = entry!.Open();
+        var document = XDocument.Load(stream);
+        var dependency = document.Descendants()
+            .FirstOrDefault(element => element.Name.LocalName == "dependency"
+                                       && (string?)element.Attribute("id") == dependencyId);
+        return (string?)dependency?.Attribute("version");
+    }
+
+    /// <summary>Runs the closure gate and reads its evidence.</summary>
+    private static (int ExitCode, string StandardOutput, string StandardError) RunGate(
+        string gate, string repositoryRoot, string workspaceRoot)
+    {
+        foreach (var interpreter in new[] { ("python", Array.Empty<string>()), ("py", new[] { "-3" }) })
+        {
+            var start = new ProcessStartInfo(interpreter.Item1)
+            {
+                WorkingDirectory = repositoryRoot,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            foreach (var argument in interpreter.Item2) start.ArgumentList.Add(argument);
+            start.ArgumentList.Add(gate);
+            start.ArgumentList.Add("--repository-root");
+            start.ArgumentList.Add(repositoryRoot);
+            start.ArgumentList.Add("--workspace-root");
+            start.ArgumentList.Add(workspaceRoot);
+            start.ArgumentList.Add("--json");
+
+            try
+            {
+                using var process = Process.Start(start);
+                if (process is null) continue;
+                var output = process.StandardOutput.ReadToEndAsync();
+                var error = process.StandardError.ReadToEndAsync();
+                if (!process.WaitForExit((int)TimeSpan.FromMinutes(15).TotalMilliseconds))
+                {
+                    process.Kill(entireProcessTree: true);
+                    process.WaitForExit();
+                }
+                return (process.ExitCode, output.GetAwaiter().GetResult(), error.GetAwaiter().GetResult());
+            }
+            catch (Win32Exception)
+            {
+                // The interpreter is not on this machine, so the next candidate is tried.
+            }
+        }
+        throw new InvalidOperationException(
+            "Neither python nor py could be started. The Core verification tooling requires a Python interpreter.");
+    }
+
+    /// <summary>The root of the Core repository the test runs from.</summary>
+    private static string? RepositoryRoot()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "eng", "verify-closure.py"))
+                && Directory.Exists(Path.Combine(directory.FullName, "src", "test")))
+                return directory.FullName;
+            directory = directory.Parent;
+        }
+        return null;
+    }
+}
