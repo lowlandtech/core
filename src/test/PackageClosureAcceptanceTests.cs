@@ -78,25 +78,37 @@ public sealed class PackageClosureAcceptanceTests
         evidence["pinnedInFeed"]!.GetValue<bool>().ShouldBeTrue(
             $"The pinned generation {pinned} is not in the local feed.");
 
-        // The version that wins the resolution is the highest version the feed
-        // offers. The gate reports that version, and this Fact verifies the
-        // report against the versions the gate measured.
+        // The pinned generation has to be unambiguous: a direct reference
+        // resolves it, and no version of the feed sorts above it, so a
+        // publisher that resolves the highest version of the feed takes it too.
         var available = evidence["availableVersions"]!.AsArray()
             .Select(node => node!.GetValue<string>()).ToList();
         available.ShouldNotBeEmpty("The local feed offers no version of the dependency.");
-        var winner = evidence["resolutionWinner"]!.GetValue<string>();
-        winner.ShouldBe(Highest(available), "The gate did not report the highest offered version as the winner.");
-        evidence["winnerMatchesPin"]!.GetValue<bool>().ShouldBe(winner == pinned);
+        evidence["directResolution"]!.GetValue<string>().ShouldBe(pinned);
+        evidence["highestAvailable"]!.GetValue<string>().ShouldBe(Highest(available));
+        evidence["pinIsUnambiguous"]!.GetValue<bool>().ShouldBeTrue(
+            $"The pinned generation {pinned} is not the only generation that the feed can resolve.");
+
+        // A version that sorts above the pin is a finding for the lane that
+        // owns the dependency, so it is named with its owner.
+        var shadowing = evidence["shadowingVersions"]!.AsArray()
+            .Select(node => node!.GetValue<string>()).ToList();
+        if (shadowing.Count > 0)
+        {
+            var reported = evidence["externalHazards"]!.AsArray()
+                .Any(node => node!["kind"]!.GetValue<string>() == "shadowing-versions");
+            reported.ShouldBeTrue(
+                "The feed holds versions above the pinned generation and the gate did not report them.");
+        }
 
         // A divergence is a finding for the lane that owns the dependency, so it
         // is named with its owner instead of being reported as a Core failure.
         foreach (var hazard in evidence["externalHazards"]!.AsArray())
         {
-            hazard!["kind"]!.GetValue<string>().ShouldBeOneOf("resolution-divergence", "batch-closure-divergence");
+            hazard!["kind"]!.GetValue<string>().ShouldBeOneOf("shadowing-versions", "batch-closure-divergence");
             hazard["owner"]!.GetValue<string>().ShouldBe(evidence["dependencyOwner"]!.GetValue<string>());
             hazard["owner"]!.GetValue<string>().ShouldNotBe("core");
             hazard["pinned"]!.GetValue<string>().ShouldBe(pinned);
-            hazard["winner"]!.GetValue<string>().ShouldNotBeNullOrWhiteSpace();
         }
 
         // The batch that the Components lane publishes is what a consumer of the
@@ -126,14 +138,22 @@ public sealed class PackageClosureAcceptanceTests
                 $"The pinned generation {pinned} does not carry '{expected}'.");
         }
 
-        // The published candidate declares the same exact dependency as the
-        // source of the producer, so the closure of the shipped package is the
-        // closure this Fact measured.
+        // The published candidate declares an exact dependency that the feed
+        // carries. It names the same generation as the source of the producer
+        // once that generation is published, and the generation before it while
+        // the publication is still pending. A candidate that declares another
+        // generation is a drift of the producer.
         var candidate = HighestCoreCandidate(feedRoot);
         candidate.ShouldNotBeNull("The local feed carries no published Core candidate.");
         var declared = DeclaredDependency(candidate!, DependencyId);
-        declared.ShouldBe($"[{pinned}]",
-            "The published Core candidate does not declare the exact dependency of the producer.");
+        declared.ShouldNotBeNullOrWhiteSpace(
+            "The published Core candidate does not declare a dependency on the Components.Core package.");
+        var declaredGeneration = declared!.Trim('[', ']');
+        available.ShouldContain(declaredGeneration,
+            $"The published Core candidate declares {declaredGeneration}, which the feed does not carry.");
+        ComparePublication(declaredGeneration, pinned).ShouldBeLessThanOrEqualTo(0,
+            $"The published Core candidate declares {declaredGeneration} while the producer "
+            + $"declares {pinned}; the published package is newer than the source of the producer.");
     }
 
     /// <summary>The highest of the given versions, in the NuGet order of this feed.</summary>
@@ -145,6 +165,40 @@ public sealed class PackageClosureAcceptanceTests
             if (Compare(candidate, highest) > 0) highest = candidate;
         }
         return highest;
+    }
+
+    /// <summary>The newest of the given versions, in the order they were published.</summary>
+    private static string HighestPublished(IEnumerable<string> versions)
+    {
+        var newest = versions.First();
+        foreach (var candidate in versions.Skip(1))
+        {
+            if (ComparePublication(candidate, newest) > 0) newest = candidate;
+        }
+        return newest;
+    }
+
+    /// <summary>
+    /// The order in which the versions of this feed were published. The stamp
+    /// carries the publication date and the time behind it, and the release
+    /// train number of the version does not decide that order.
+    /// </summary>
+    private static int ComparePublication(string left, string right)
+    {
+        var first = Parts(left);
+        var second = Parts(right);
+        var numeric = Stamp(first.Release).CompareTo(Stamp(second.Release));
+        if (numeric != 0) return numeric;
+        return string.CompareOrdinal(first.Release, second.Release);
+    }
+
+    /// <summary>The publication date and time that the stamp of a version carries.</summary>
+    private static (int Date, int Time) Stamp(string release)
+    {
+        if (release.Length == 0 || !release.All(char.IsDigit)) return (0, 0);
+        var date = release.Length >= 8 ? int.Parse(release[..8]) : 0;
+        var time = release.Length >= 14 ? int.Parse(release.Substring(8, 6)) : 0;
+        return (date, time);
     }
 
     /// <summary>
@@ -163,13 +217,18 @@ public sealed class PackageClosureAcceptanceTests
         numeric = first.Patch.CompareTo(second.Patch);
         if (numeric != 0) return numeric;
         if (first.Release.Length == 0 && second.Release.Length == 0) return 0;
-        if (first.Release.Length == 0) return -1;
-        if (second.Release.Length == 0) return 1;
-        if (long.TryParse(first.Release, out var firstRelease)
-            && long.TryParse(second.Release, out var secondRelease))
+        var firstIsNumeric = first.Release.All(char.IsDigit);
+        var secondIsNumeric = second.Release.All(char.IsDigit);
+        if (firstIsNumeric && secondIsNumeric)
         {
-            return firstRelease.CompareTo(secondRelease);
+            // The stamps of this feed are longer than a 64 bit number, so they
+            // are compared as digits instead of being parsed.
+            if (first.Release.Length != second.Release.Length)
+                return first.Release.Length.CompareTo(second.Release.Length);
+            return string.CompareOrdinal(first.Release, second.Release);
         }
+        if (firstIsNumeric) return 1;
+        if (secondIsNumeric) return -1;
         return string.CompareOrdinal(first.Release, second.Release);
     }
 
@@ -196,7 +255,7 @@ public sealed class PackageClosureAcceptanceTests
         var highest = candidates[0];
         foreach (var candidate in candidates.Skip(1))
         {
-            if (Compare(candidate.Version, highest.Version) > 0) highest = candidate;
+            if (ComparePublication(candidate.Version, highest.Version) > 0) highest = candidate;
         }
         return highest.Path;
     }

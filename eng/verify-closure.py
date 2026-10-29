@@ -2,25 +2,32 @@
 
 ``src/lib`` declares an exact dependency on ``LowlandTech.Components.Core``, the
 package that the Components lane owns. That exact pin is the generation the
-Core package and its isolated consumer are proved against, but it is only the
-generation a consumer *receives* when nothing else in its closure asks for a
-different one. A consumer that also references ``LowlandTech.Components.Core``
-directly takes the highest version the feed offers, and NuGet compares the
-versions of this workspace by their numeric parts: ``2026.10.2-202610242``
-sorts above ``2026.10.1-20261027141438913274721`` even though it is the older
-generation of the same library.
+Core package and its isolated consumer are proved against, and it has to stay
+unambiguous: a consumer that resolves the dependency has to receive the pinned
+generation whichever rule its resolver applies.
 
-This tool measures that resolution instead of narrating it, so the closure
-evidence of the producer is reproducible. It reports the version the producer
-pins, the versions the feed offers and the version that wins the resolution,
-and it names the lane that owns the winning package.
+NuGet resolves a direct dependency to the lowest applicable version, and a bare
+version is a lower bound. A publisher that resolves the highest version of the
+feed instead takes a different generation, and that is what the Backend lane
+measured in its deployment before its publisher learned to read the exact
+version that a producer declares. The versions of this workspace also compare
+by their numeric parts, so a generation published with an older timestamp can
+sort above a newer one.
+
+This tool measures that closure instead of narrating it. It reports the
+version the producer pins, the versions the feed offers, the generation that
+a direct reference resolves to, the versions that shadow the pin, and the
+reference that the newest published batch of the Components lane declares. A
+version that shadows the pin is a finding for the lane that owns the
+dependency, because the producer cannot close it alone.
 
 Exit codes:
-  0  the pinned generation is the version that wins the resolution
+  0  the pinned generation is unambiguous and no divergence is reported
   1  a Core owned violation: the producer does not declare an exact pin, or the
      pinned generation is not in the feed
-  2  the Core owned invariants hold, but another version of the dependency wins
-     the resolution; the evidence names the owner of that package
+  2  the Core owned invariants hold, but another generation of the dependency
+     shadows the pin or the newest published batch resolves another one; the
+     evidence names the owner of that package
   3  the tool could not run
 """
 
@@ -79,18 +86,17 @@ def _version_key(version: str) -> tuple:
 def _publication_key(version: str) -> tuple:
     """A sort key that follows the order in which the versions were published.
 
-    The stamps of this workspace carry a publication timestamp in their first
-    fourteen digits, and some of them add a longer fraction behind it. The
-    NuGet order of the release label compares the whole number, so it puts the
-    longer stamp above a later one. Publication order reads the timestamp, and
-    that is the order that decides which candidate is the current one.
+    The stamps of this workspace carry the publication date in their first
+    eight digits and the time behind it when the stamp is long enough. The
+    release train number of the version does not decide that order: the
+    packages of the ``2026.10.2`` train were published before the packages of
+    the ``2026.10.1`` train, and the NuGet order of the numeric parts puts
+    them the other way around.
     """
-    numeric, _, release = version.partition("-")
-    parts = tuple(int(part) if part.isdigit() else -1 for part in numeric.split("."))
-    stamp = 0
-    if release.isdigit() and len(release) >= 14:
-        stamp = int(release[:14])
-    return (parts, stamp, release)
+    _, _, release = version.partition("-")
+    date = int(release[:8]) if release.isdigit() and len(release) >= 8 else 0
+    time = int(release[8:14]) if release.isdigit() and len(release) >= 14 else 0
+    return (date, time, release)
 
 
 def declared_pin(repository: Path) -> str | None:
@@ -123,15 +129,25 @@ def feed_versions(feed: Path) -> list[str]:
     return sorted(versions, key=_version_key)
 
 
-def newest_consumer_batch(feed: Path, core_version: str | None) -> tuple[str, dict[str, str]] | None:
-    """The newest published batch of the Components lane that takes the Core candidate.
+def resolve(reference: str, available: list[str]) -> str | None:
+    """The version that a reference resolves to.
 
-    The batch is the package that a consumer of the workspace actually takes, so
-    its own reference to the dependency decides what that consumer receives. The
-    batch that takes the newest Core candidate is the one that matters for the
-    closure of that candidate.
+    An exact reference resolves to itself, and a bare reference is a lower
+    bound that NuGet resolves to the lowest applicable version.
     """
-    if not feed.is_dir() or core_version is None:
+    if not reference:
+        return None
+    if reference.startswith("[") and reference.endswith("]"):
+        exact = reference[1:-1]
+        return exact if exact in available else None
+    candidates = [version for version in available
+                   if _version_key(version) >= _version_key(reference)]
+    return min(candidates, key=_version_key) if candidates else None
+
+
+def newest_consumer_batch(feed: Path) -> tuple[str, dict[str, str]] | None:
+    """The newest published batch of the Components lane and its dependencies."""
+    if not feed.is_dir():
         return None
     candidates = []
     for package in feed.glob(f"{CONSUMER_PACKAGE_ID}.*.nupkg"):
@@ -140,11 +156,9 @@ def newest_consumer_batch(feed: Path, core_version: str | None) -> tuple[str, di
             dependencies = read_dependencies(package)
             if dependencies:
                 candidates.append((version, dependencies))
-    matching = [entry for entry in candidates
-                if resolve_reference(entry[1].get("LowlandTech.Core", ""), core_version) == core_version]
-    if not matching:
+    if not candidates:
         return None
-    version, dependencies = max(matching, key=lambda entry: _publication_key(entry[0]))
+    version, dependencies = max(candidates, key=lambda entry: _publication_key(entry[0]))
     return version, dependencies
 
 
@@ -177,19 +191,6 @@ def newest_core_candidate(feed: Path) -> str | None:
     return max(versions, key=_publication_key) if versions else None
 
 
-def resolve_reference(reference: str, winner: str | None) -> str | None:
-    """The version that a declared reference resolves to.
-
-    An exact reference resolves to itself, and a lower bound resolves to the
-    highest version the feed offers.
-    """
-    if not reference:
-        return None
-    if reference.startswith("[") and reference.endswith("]"):
-        return reference[1:-1]
-    return winner
-
-
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repository-root", default=str(Path(__file__).resolve().parents[1]))
@@ -210,7 +211,7 @@ def main() -> int:
 
     pin = declared_pin(repository)
     versions = feed_versions(feed)
-    winner = versions[-1] if versions else None
+    highest = versions[-1] if versions else None
 
     core_violations = []
     if pin is None:
@@ -227,32 +228,41 @@ def main() -> int:
             "owner": "core",
         })
 
+    # A version that sorts above the pin shadows it for a publisher that
+    # resolves the highest version of the feed.
+    shadowing = [version for version in versions
+                 if pin is not None and _version_key(version) > _version_key(pin)]
+
     hazards = []
-    if pin is not None and winner is not None and winner != pin:
+    if shadowing:
         hazards.append({
-            "kind": "resolution-divergence",
+            "kind": "shadowing-versions",
             "pinned": pin,
-            "winner": winner,
+            "winner": highest,
+            "shadowingVersions": shadowing,
             "owner": DEPENDENCY_OWNER,
-            "detail": "A consumer that also references the dependency resolves the "
-                      f"winning version {winner} instead of the pinned generation {pin}.",
+            "detail": "The versions " + ", ".join(shadowing) + " sort above the pinned "
+                      f"generation {pin}, so a publisher that resolves the highest "
+                      "version of the feed takes another generation.",
         })
 
     # The batch of the Components lane is what a consumer of the workspace takes,
     # so its own reference to the dependency decides what that consumer receives.
     consumer = None
     core_candidate = newest_core_candidate(feed)
-    batch = newest_consumer_batch(feed, core_candidate)
+    batch = newest_consumer_batch(feed)
     if batch is not None:
         batch_version, dependencies = batch
         declared = dependencies.get(DEPENDENCY_ID, "")
-        resolved = resolve_reference(declared, winner)
+        resolved = resolve(declared, versions)
         consumer = {
             "package": CONSUMER_PACKAGE_ID,
             "version": batch_version,
             "declaredCore": dependencies.get("LowlandTech.Core", ""),
             "declaredDependency": declared,
             "resolvedDependency": resolved,
+            "takesCoreCandidate": resolve(dependencies.get("LowlandTech.Core", ""),
+                                           [core_candidate] if core_candidate else []) == core_candidate,
             "resolvesToPinnedGeneration": resolved is not None and resolved == pin,
         }
         if pin is not None and resolved is not None and resolved != pin:
@@ -277,8 +287,10 @@ def main() -> int:
         "pinnedIsExact": pin is not None,
         "pinnedInFeed": pin is not None and pin in versions,
         "availableVersions": versions,
-        "resolutionWinner": winner,
-        "winnerMatchesPin": winner is not None and winner == pin,
+        "directResolution": resolve(pin, versions) if pin else None,
+        "highestAvailable": highest,
+        "shadowingVersions": shadowing,
+        "pinIsUnambiguous": pin is not None and pin in versions and not shadowing,
         "coreCandidate": core_candidate,
         "consumerBatch": consumer,
         "coreViolations": core_violations,
@@ -294,7 +306,9 @@ def main() -> int:
         print(f"  dependency: {DEPENDENCY_ID} (owner: {DEPENDENCY_OWNER})")
         print(f"  pinned: {pin}")
         print(f"  available: {', '.join(versions) if versions else '(none)'}")
-        print(f"  resolution winner: {winner}")
+        print(f"  direct resolution: {evidence['directResolution']}")
+        print(f"  highest available: {highest}")
+        print(f"  shadowing versions: {', '.join(shadowing) if shadowing else '(none)'}")
         if consumer is not None:
             print(f"  consumer batch: {consumer['package']} {consumer['version']} "
                   f"declares {consumer['declaredDependency']} and resolves {consumer['resolvedDependency']}")

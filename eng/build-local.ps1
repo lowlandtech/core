@@ -12,6 +12,14 @@ if ($Version -notmatch '^2026\.10\.3-[1-9][0-9]*$') { throw 'Choose an immutable
 $feed = [IO.Path]::GetFullPath($FeedPath)
 $staging = Join-Path $root "artifacts/local-packages/$Version"
 if (Test-Path -LiteralPath $staging) { throw "Version already staged: $Version" }
+# The exact dependency that the producer declares is the single source of truth
+# for the closure that this release proves, so the release reads it from the
+# project instead of repeating it here.
+$producerProject = Join-Path $root 'src/lib/LowlandTech.Core.csproj'
+$componentsCoreVersion = ([regex]::Match(
+    (Get-Content -LiteralPath $producerProject -Raw),
+    '<PackageReference\s+Include="LowlandTech\.Components\.Core"\s+Version="\[([^\]]+)\]"')).Groups[1].Value
+if (!$componentsCoreVersion) { throw 'The producer does not declare an exact Components.Core dependency.' }
 $null = New-Item -ItemType Directory -Path $staging -Force
 function Invoke-DotNet([string[]]$Arguments) {
     & dotnet @Arguments
@@ -54,7 +62,7 @@ try {
         $reader = [IO.StreamReader]::new($nuspec[0].Open())
         try { [xml]$metadata = $reader.ReadToEnd() } finally { $reader.Dispose() }
         $dependencies = @($metadata.SelectNodes("//*[local-name()='dependency'][@id='LowlandTech.Components.Core']"))
-        if ($dependencies.Count -ne 1 -or $dependencies[0].version -ne '[2026.10.1-20261027141438913274721]') { throw 'Components.Core exact dependency differs.' }
+        if ($dependencies.Count -ne 1 -or $dependencies[0].version -ne "[$componentsCoreVersion]") { throw 'Components.Core exact dependency differs.' }
         if (@($zip.Entries | Where-Object FullName -Like '*LowlandTech.Components.Core.dll').Count) { throw 'Core must not bundle Components.Core.' }
         foreach ($required in @('README.md','icon.png','lib/net10.0/LowlandTech.Core.dll')) {
             if (!($zip.Entries | Where-Object FullName -EQ $required)) { throw "Missing package entry $required" }
@@ -77,7 +85,7 @@ try {
     Invoke-DotNet @('run', '--project', $project, '-c', 'Release', '--no-build', '--no-restore', "-p:CorePackageVersion=$Version")
     $assets = Get-Content -LiteralPath (Join-Path $consumer 'obj/project.assets.json') -Raw | ConvertFrom-Json
     $names = @($assets.libraries.PSObject.Properties.Name)
-    if ($names -notcontains "LowlandTech.Core/$Version" -or $names -notcontains 'LowlandTech.Components.Core/2026.10.1-20261027141438913274721') { throw 'Isolated consumer did not resolve the exact closure.' }
+    if ($names -notcontains "LowlandTech.Core/$Version" -or $names -notcontains "LowlandTech.Components.Core/$componentsCoreVersion") { throw 'Isolated consumer did not resolve the exact closure.' }
     if (@($assets.libraries.PSObject.Properties | Where-Object { $_.Value.type -eq 'project' }).Count) { throw 'Package consumer contains a project substitution.' }
 
     # The selected trim analysis is applied to the candidate itself: the isolated
@@ -102,7 +110,7 @@ try {
     $report = [ordered]@{
         version = $Version
         sourceCommit = $commit
-        componentsCoreVersion = '2026.10.1-20261027141438913274721'
+        componentsCoreVersion = $componentsCoreVersion
         packageSha256 = (Get-FileHash -LiteralPath $package.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
         isolatedConsumer = $consumer
         published = !$SkipPublish
