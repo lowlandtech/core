@@ -12,15 +12,6 @@
       ]
     },
     {
-      "file": "CoreTrimmingAcceptanceTests.cs",
-      "facts": 1,
-      "theories": 0,
-      "inlineData": 0,
-      "criteria": [
-        "CORE0001-US01-SC01: the canonical producer stays trimmable with zero owned warnings"
-      ]
-    },
-    {
       "file": "GitFlowClientContractAcceptanceTests.cs",
       "facts": 4,
       "theories": 0,
@@ -39,30 +30,12 @@
       ]
     },
     {
-      "file": "PackageClosureAcceptanceTests.cs",
-      "facts": 1,
-      "theories": 0,
-      "inlineData": 0,
-      "criteria": [
-        "CORE0001-US02-SC01: the canonical producer pins the startup-contract generation of the dependency"
-      ]
-    },
-    {
       "file": "PluginContributionContractAcceptanceTests.cs",
       "facts": 4,
       "theories": 0,
       "inlineData": 0,
       "criteria": [
         "CORE0002-US02-SC01: the portable plugin contribution contract keeps its documented rules"
-      ]
-    },
-    {
-      "file": "ProducerRetirementAcceptanceTests.cs",
-      "facts": 1,
-      "theories": 0,
-      "inlineData": 0,
-      "criteria": [
-        "CORE0001-US02-SC01: Core is the only producer of the Core package identities"
       ]
     }
   ],
@@ -72,6 +45,27 @@
       "facts": 3,
       "criteria": [
         "CORE0001-US02-SC01: the canonical container contract carries the optional item identity"
+      ]
+    },
+    {
+      "file": "CORE0001.Trimmability/US01.Contract/SC01_TrimmablePackageMarksDynamicDiscoveryUnreferencedCode.cs",
+      "facts": 2,
+      "criteria": [
+        "CORE0001-US02-SC01: the canonical producer stays trimmable with zero owned warnings"
+      ]
+    },
+    {
+      "file": "CORE0001.ProducerIdentity/US01.Retirement/SC01_OnlyCorePublishesTheCorePackageIdentities.cs",
+      "facts": 4,
+      "criteria": [
+        "CORE0001-US02-SC01: Core is the only producer of the Core package identities"
+      ]
+    },
+    {
+      "file": "CORE0001.DependencyClosure/US01.Contract/SC01_TheCanonicalCoreClosurePinsTheStartupContractGeneration.cs",
+      "facts": 5,
+      "criteria": [
+        "CORE0001-US02-SC01: the canonical producer pins the startup-contract generation of the dependency"
       ]
     }
   ],
