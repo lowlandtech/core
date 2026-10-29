@@ -120,14 +120,33 @@ public sealed class TestLayoutMigrationUseCase : global::LowlandTech.Core.Tests.
         var parityMapped = manifest["backendParityFixtures"]!.AsArray()
             .All(entry => entry!["criteria"]!.AsArray().Count > 0);
 
+        // A family that was migrated into the layout carries its criteria with
+        // it, so the coverage of a retired class is not lost.
+        var scenarios = evidence["scenarios"]!.AsArray()
+            .ToDictionary(node => node!["file"]!.GetValue<string>(),
+                             node => node!["facts"]!.AsArray().Count);
+        var migrated = manifest["migratedFamilies"]!.AsArray();
+        var lostFamilies = migrated.Where(entry =>
+        {
+            var file = entry!["file"]!.GetValue<string>();
+            return !scenarios.TryGetValue(file, out var facts) || facts != entry["facts"]!.GetValue<int>();
+        }).Select(entry => entry!["file"]!.GetValue<string>()).OrderBy(file => file).ToList();
+        var familiesWithoutCriteria = migrated
+            .Where(entry => entry!["criteria"]!.AsArray().Count == 0)
+            .Select(entry => entry!["file"]!.GetValue<string>())
+            .OrderBy(file => file).ToList();
+
         var ok = missing.Count == 0 && unmapped.Count == 0 && changed.Count == 0
+                 && lostFamilies.Count == 0 && familiesWithoutCriteria.Count == 0
                  && fixtures == 5 && parityMapped;
         Record("LegacyCoverageMapped", ok,
             ok
-                ? $"{scanned.Count} current test files are mapped to their source criteria and "
-                  + $"{fixtures} Backend parity fixtures are mapped."
+                ? $"{scanned.Count} current test files and {migrated.Count} migrated families are mapped "
+                  + "to their source criteria, and the five Backend parity fixtures are mapped."
                 : $"unmapped {string.Join(", ", missing)}; without criteria {string.Join(", ", unmapped)}; "
-                  + $"changed {string.Join(", ", changed)}; parity fixtures {fixtures}.");
+                  + $"changed {string.Join(", ", changed)}; lost families {string.Join(", ", lostFamilies)}; "
+                  + $"families without criteria {string.Join(", ", familiesWithoutCriteria)}; "
+                  + $"parity fixtures {fixtures}.");
         return ok;
     }
 
@@ -242,12 +261,23 @@ public sealed class TestLayoutMigrationUseCase : global::LowlandTech.Core.Tests.
         }
 
         var scanned = evidence["legacyTests"]!.AsArray().Count;
-        var ok = lost.Count == 0 && changedFixtures.Count == 0 && scanned > 0;
+        var scenarios = evidence["scenarios"]!.AsArray()
+            .ToDictionary(node => node!["file"]!.GetValue<string>(),
+                             node => node!["facts"]!.AsArray().Count);
+        var lostMigrations = manifest["migratedFamilies"]!.AsArray()
+            .Where(entry =>
+            {
+                var file = entry!["file"]!.GetValue<string>();
+                return !scenarios.TryGetValue(file, out var facts) || facts != entry["facts"]!.GetValue<int>();
+            })
+            .Select(entry => entry!["file"]!.GetValue<string>()).ToList();
+        var ok = lost.Count == 0 && changedFixtures.Count == 0 && lostMigrations.Count == 0 && scanned > 0;
         Record("ExecutedBehaviorRetained", ok,
             ok
-                ? $"{scanned} legacy test files keep their exact cases and the five Backend parity "
-                  + "fixtures keep their hashes."
-                : $"lost {string.Join("; ", lost)}; fixtures {string.Join("; ", changedFixtures)}.");
+                ? $"{scanned} legacy test files keep their exact cases, the migrated families execute "
+                  + "their own facts, and the five Backend parity fixtures keep their hashes."
+                : $"lost {string.Join("; ", lost)}; fixtures {string.Join("; ", changedFixtures)}; "
+                  + $"lost migrations {string.Join("; ", lostMigrations)}.");
         return ok;
     }
 

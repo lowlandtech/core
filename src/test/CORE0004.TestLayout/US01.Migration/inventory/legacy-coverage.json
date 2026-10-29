@@ -3,15 +3,6 @@
   "purpose": "The coverage that the Core lane held before the migration of the scenarios, mapped to the source criteria that every test file guards.",
   "legacyTestFiles": [
     {
-      "file": "ContainerContractAcceptanceTests.cs",
-      "facts": 1,
-      "theories": 0,
-      "inlineData": 0,
-      "criteria": [
-        "CORE0001-US01-SC01: the container contract carries its documented identity"
-      ]
-    },
-    {
       "file": "CoreContractsTests.cs",
       "facts": 4,
       "theories": 0,
@@ -72,6 +63,15 @@
       "inlineData": 0,
       "criteria": [
         "CORE0001-US02-SC01: Core is the only producer of the Core package identities"
+      ]
+    }
+  ],
+  "migratedFamilies": [
+    {
+      "file": "CORE0001.ContainerContract/US01.Contracts/SC01_ContainerContractCarriesTheOptionalItemIdentity.cs",
+      "facts": 3,
+      "criteria": [
+        "CORE0001-US02-SC01: the canonical container contract carries the optional item identity"
       ]
     }
   ],
