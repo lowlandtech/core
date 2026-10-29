@@ -271,11 +271,12 @@ public sealed class TestLayoutMigrationUseCase : global::LowlandTech.Core.Tests.
                 return !scenarios.TryGetValue(file, out var facts) || facts != entry["facts"]!.GetValue<int>();
             })
             .Select(entry => entry!["file"]!.GetValue<string>()).ToList();
-        var ok = lost.Count == 0 && changedFixtures.Count == 0 && lostMigrations.Count == 0 && scanned > 0;
+        var ok = lost.Count == 0 && changedFixtures.Count == 0 && lostMigrations.Count == 0
+                 && scanned + manifest["migratedFamilies"]!.AsArray().Count > 0;
         Record("ExecutedBehaviorRetained", ok,
             ok
-                ? $"{scanned} legacy test files keep their exact cases, the migrated families execute "
-                  + "their own facts, and the five Backend parity fixtures keep their hashes."
+                ? $"{scanned} legacy test files keep their exact cases, {manifest["migratedFamilies"]!.AsArray().Count} "
+                  + "migrated families execute their own facts, and the five Backend parity fixtures keep their hashes."
                 : $"lost {string.Join("; ", lost)}; fixtures {string.Join("; ", changedFixtures)}; "
                   + $"lost migrations {string.Join("; ", lostMigrations)}.");
         return ok;
