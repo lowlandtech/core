@@ -12,15 +12,6 @@
       ]
     },
     {
-      "file": "GraphContractAcceptanceTests.cs",
-      "facts": 5,
-      "theories": 0,
-      "inlineData": 0,
-      "criteria": [
-        "CORE0002-US01-SC01: the backend-native graph contract keeps its documented shapes"
-      ]
-    },
-    {
       "file": "PluginContributionContractAcceptanceTests.cs",
       "facts": 4,
       "theories": 0,
@@ -64,6 +55,13 @@
       "facts": 5,
       "criteria": [
         "CORE0001-US01-SC01: the canonical Core contracts keep their published shapes"
+      ]
+    },
+    {
+      "file": "CORE0002.GraphContract/US01.SharedContracts/SC01_TheSharedContractReadsTheHostDocuments.cs",
+      "facts": 6,
+      "criteria": [
+        "CORE0002-US01-SC01: the backend-native graph contract keeps its documented shapes"
       ]
     }
   ],
