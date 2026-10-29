@@ -131,9 +131,10 @@ public sealed class DependencyClosureUseCase : global::LowlandTech.Core.Tests.Re
                          && declared is not null
                          && declared.StartsWith('[')
                          && declared.EndsWith(']')
+                         && declaredGeneration is not null
                          && available.Contains(declaredGeneration)
                          && global::LowlandTech.Core.Tests.Refinement.PackageFeed.ComparePublication(
-                                declaredGeneration!, pinned) <= 0;
+                                declaredGeneration, pinned) <= 0;
         Record("PublishedCandidateDeclaresThePin", consistent,
             consistent
                 ? $"The published candidate declares {declared} and the feed carries that generation."

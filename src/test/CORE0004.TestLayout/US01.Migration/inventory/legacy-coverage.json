@@ -3,15 +3,6 @@
   "purpose": "The coverage that the Core lane held before the migration of the scenarios, mapped to the source criteria that every test file guards.",
   "legacyTestFiles": [
     {
-      "file": "CoreContractsTests.cs",
-      "facts": 4,
-      "theories": 0,
-      "inlineData": 0,
-      "criteria": [
-        "CORE0001-US01-SC01: the canonical Core contracts keep their published shapes"
-      ]
-    },
-    {
       "file": "GitFlowClientContractAcceptanceTests.cs",
       "facts": 4,
       "theories": 0,
@@ -66,6 +57,13 @@
       "facts": 5,
       "criteria": [
         "CORE0001-US02-SC01: the canonical producer pins the startup-contract generation of the dependency"
+      ]
+    },
+    {
+      "file": "CORE0001.CoreContracts/US01.Registry/SC01_TheRegistryKeepsTheIdentityOfItsDescriptors.cs",
+      "facts": 5,
+      "criteria": [
+        "CORE0001-US01-SC01: the canonical Core contracts keep their published shapes"
       ]
     }
   ],
