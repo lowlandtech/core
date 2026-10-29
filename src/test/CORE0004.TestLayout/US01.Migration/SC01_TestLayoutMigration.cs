@@ -11,22 +11,22 @@ public sealed class SC01_TestLayoutMigration(global::LowlandTech.Core.Tests.Refi
     protected override Task WhenAsync() => UseCase.InvokeAsync();
 
     [Then("Result.LegacyCoverageMapped should be true")]
-    [Trait("UAC", "01"), Fact(DisplayName = "UAC01: captured result should be true", Skip = "TODO: CORE0004-US01-SC01: implement map every current Fact/Theory including producer/closure/git-flow/container and five Backend parity fixtures to unchanged source criteria.")]
-    public void UAC01_LegacyCoverageMapped() => Result.LegacyCoverageMapped.ShouldBe(true);
+    [Trait("UAC", "01"), Fact(DisplayName = "UAC01: captured result should be true")]
+    public void UAC01_LegacyCoverageMapped() => Result.LegacyCoverageMapped.ShouldBe(true, Result.Diagnostic("LegacyCoverageMapped"));
 
     [Then("Result.ScenarioShapeProven should be true")]
-    [Trait("UAC", "02"), Fact(DisplayName = "UAC02: captured result should be true", Skip = "TODO: CORE0004-US01-SC01: implement actual Core scenario scan with one Given/When and expression-bodied uniquely tagged Facts, named result cases and fixture-owned one-time invocation.")]
-    public void UAC02_ScenarioShapeProven() => Result.ScenarioShapeProven.ShouldBe(true);
+    [Trait("UAC", "02"), Fact(DisplayName = "UAC02: captured result should be true")]
+    public void UAC02_ScenarioShapeProven() => Result.ScenarioShapeProven.ShouldBe(true, Result.Diagnostic("ScenarioShapeProven"));
 
     [Then("Result.InvalidLayoutRejected should be true")]
-    [Trait("UAC", "03"), Fact(DisplayName = "UAC03: captured result should be true", Skip = "TODO: CORE0004-US01-SC01: implement negative fixtures for missing/duplicate UAC, wrong paths, repeated steps, multi-assertion, empty selection and unfinished skips.")]
-    public void UAC03_InvalidLayoutRejected() => Result.InvalidLayoutRejected.ShouldBe(true);
+    [Trait("UAC", "03"), Fact(DisplayName = "UAC03: captured result should be true")]
+    public void UAC03_InvalidLayoutRejected() => Result.InvalidLayoutRejected.ShouldBe(true, Result.Diagnostic("InvalidLayoutRejected"));
 
     [Then("Result.ExecutedBehaviorRetained should be true")]
-    [Trait("UAC", "04"), Fact(DisplayName = "UAC04: captured result should be true", Skip = "TODO: CORE0004-US01-SC01: implement retained old suite until production-backed new equivalents execute; compare exact cases and fixture hashes.")]
-    public void UAC04_ExecutedBehaviorRetained() => Result.ExecutedBehaviorRetained.ShouldBe(true);
+    [Trait("UAC", "04"), Fact(DisplayName = "UAC04: captured result should be true")]
+    public void UAC04_ExecutedBehaviorRetained() => Result.ExecutedBehaviorRetained.ShouldBe(true, Result.Diagnostic("ExecutedBehaviorRetained"));
 
     [Then("Result.TrimmedConsumerRetained should be true")]
-    [Trait("UAC", "05"), Fact(DisplayName = "UAC05: captured result should be true", Skip = "TODO: CORE0004-US01-SC01: implement native release build, tests and nonpublishing package preflight with exact pin and zero owned trim warnings.")]
-    public void UAC05_TrimmedConsumerRetained() => Result.TrimmedConsumerRetained.ShouldBe(true);
+    [Trait("UAC", "05"), Fact(DisplayName = "UAC05: captured result should be true")]
+    public void UAC05_TrimmedConsumerRetained() => Result.TrimmedConsumerRetained.ShouldBe(true, Result.Diagnostic("TrimmedConsumerRetained"));
 }

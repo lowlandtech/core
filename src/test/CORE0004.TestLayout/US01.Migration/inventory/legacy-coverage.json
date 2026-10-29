@@ -1,0 +1,115 @@
+{
+  "scope": "CORE0004-US01-SC01",
+  "purpose": "The coverage that the Core lane held before the migration of the scenarios, mapped to the source criteria that every test file guards.",
+  "legacyTestFiles": [
+    {
+      "file": "ContainerContractAcceptanceTests.cs",
+      "facts": 1,
+      "theories": 0,
+      "inlineData": 0,
+      "criteria": [
+        "CORE0001-US01-SC01: the container contract carries its documented identity"
+      ]
+    },
+    {
+      "file": "CoreContractsTests.cs",
+      "facts": 4,
+      "theories": 0,
+      "inlineData": 0,
+      "criteria": [
+        "CORE0001-US01-SC01: the canonical Core contracts keep their published shapes"
+      ]
+    },
+    {
+      "file": "CoreTrimmingAcceptanceTests.cs",
+      "facts": 1,
+      "theories": 0,
+      "inlineData": 0,
+      "criteria": [
+        "CORE0001-US01-SC01: the canonical producer stays trimmable with zero owned warnings"
+      ]
+    },
+    {
+      "file": "GitFlowClientContractAcceptanceTests.cs",
+      "facts": 4,
+      "theories": 0,
+      "inlineData": 0,
+      "criteria": [
+        "CORE0002-US01-SC01: the git-flow client contract keeps its documented transitions"
+      ]
+    },
+    {
+      "file": "GraphContractAcceptanceTests.cs",
+      "facts": 5,
+      "theories": 0,
+      "inlineData": 0,
+      "criteria": [
+        "CORE0002-US01-SC01: the backend-native graph contract keeps its documented shapes"
+      ]
+    },
+    {
+      "file": "PackageClosureAcceptanceTests.cs",
+      "facts": 1,
+      "theories": 0,
+      "inlineData": 0,
+      "criteria": [
+        "CORE0001-US02-SC01: the canonical producer pins the startup-contract generation of the dependency"
+      ]
+    },
+    {
+      "file": "PluginContributionContractAcceptanceTests.cs",
+      "facts": 4,
+      "theories": 0,
+      "inlineData": 0,
+      "criteria": [
+        "CORE0002-US02-SC01: the portable plugin contribution contract keeps its documented rules"
+      ]
+    },
+    {
+      "file": "ProducerRetirementAcceptanceTests.cs",
+      "facts": 1,
+      "theories": 0,
+      "inlineData": 0,
+      "criteria": [
+        "CORE0001-US02-SC01: Core is the only producer of the Core package identities"
+      ]
+    }
+  ],
+  "backendParityFixtures": [
+    {
+      "file": "fixtures/BKPL0002.US01.SharedContracts/auth-create-user.json",
+      "sha256": "3989ca959d896ffedc597eb2eb5376248c22a78b38a47ad7d6f1f841ff08277d",
+      "criteria": [
+        "BKPL0002-US01-SC01: the Backend parity fixture of the shared auth contract"
+      ]
+    },
+    {
+      "file": "fixtures/BKPL0002.US01.SharedContracts/builder-dummy-prepare.json",
+      "sha256": "2e9cbbd88e778404e980f746e0a5f24c0b296d803ef6d7cd8c2e2a1ff490c642",
+      "criteria": [
+        "BKPL0002-US01-SC01: the Backend parity fixture of the builder preparation"
+      ]
+    },
+    {
+      "file": "fixtures/BKPL0002.US01.SharedContracts/harness-has-container.json",
+      "sha256": "1d13d7b8d75e5ed7a267d5deb9fab1ddfce6c24d9be0655973aed5b2f1ec93c9",
+      "criteria": [
+        "BKPL0002-US01-SC01: the Backend parity fixture of the container query"
+      ]
+    },
+    {
+      "file": "fixtures/BKPL0002.US01.SharedContracts/harness-has-layout.json",
+      "sha256": "5c6093b43efc01428118cf35b02154875e3e8661af6e65b073a379f9c9166dc1",
+      "criteria": [
+        "BKPL0002-US01-SC01: the Backend parity fixture of the layout query"
+      ]
+    },
+    {
+      "file": "fixtures/BKPL0002.US01.SharedContracts/harness-list-main-intents.json",
+      "sha256": "f2107f8851877fed9a0683990ddee6457b95a8d33b609e8ba3abfe105c5894af",
+      "criteria": [
+        "BKPL0002-US01-SC01: the Backend parity fixture of the intent list"
+      ]
+    }
+  ]
+}
