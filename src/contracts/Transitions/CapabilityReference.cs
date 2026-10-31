@@ -7,7 +7,11 @@ namespace LowlandTech.Core.Contracts.Transitions;
 /// </summary>
 public sealed record CapabilityReference(string Key)
 {
-    /// <summary>The capabilities every host of the platform registers.</summary>
+    /// <summary>
+    /// The capabilities every host of the platform registers. The contract
+    /// grants none of them implicitly: a host that admits a document that
+    /// declares one of them registers it.
+    /// </summary>
     public static IReadOnlyList<string> FixedCapabilities { get; } =
     [
         "client.access",

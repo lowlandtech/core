@@ -58,6 +58,13 @@
       "criteria": [
         "CORE0002-US01-SC01: the git-flow client contract keeps its documented transitions"
       ]
+    },
+    {
+      "file": "CORE0007.CapabilityAdmission/US01.Contract/SC01_TheAdmissionRefusesAnUnregisteredCapability.cs",
+      "facts": 5,
+      "criteria": [
+        "CORE0007-US01-SC01: the capability admission of the canonical contract distinguishes an absent registration from an empty registration"
+      ]
     }
   ],
   "backendParityFixtures": [

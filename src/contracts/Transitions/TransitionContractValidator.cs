@@ -9,6 +9,21 @@ namespace LowlandTech.Core.Contracts.Transitions;
 /// the declared content hash come from the host; the document comes from the
 /// plugin.
 /// </summary>
+/// <param name="Document">The document the plugin declared.</param>
+/// <param name="ExpectedOwner">The owner the host admits contributions from.</param>
+/// <param name="Scope">The scope the host admits the document in.</param>
+/// <param name="ExpectedScope">The scope the host expects the document in.</param>
+/// <param name="KnownCapabilities">
+/// The capabilities the host has registered. No registration at all means that
+/// the host declines to constrain the capability, so the contract has nothing
+/// to compare against and refuses nothing. An empty registration means that
+/// the host registered no capability, so every declared capability is
+/// unregistered and is refused with the named refusal of the contract. A host
+/// that means "this host trusts nothing" therefore passes an empty
+/// registration, and a host that means "the host provides these capabilities"
+/// passes the keys it provides.
+/// </param>
+/// <param name="DeclaredContentHash">The content hash the host declares for the document.</param>
 public sealed record TransitionAdmissionRequest(
     TransitionDefinitionDocument Document,
     string ExpectedOwner,
@@ -454,7 +469,11 @@ public static class TransitionContractValidator
         List<TransitionContractDiagnostic> diagnostics)
     {
         if (string.IsNullOrWhiteSpace(capability)) return;
-        if (knownCapabilities is null || knownCapabilities.Count == 0) return;
+        // An absent registration is the host that declines to constrain the
+        // capability, so the contract has nothing to compare against. An empty
+        // registration is the host that registered no capability at all, so
+        // every declared capability is unregistered and the refusal applies.
+        if (knownCapabilities is null) return;
         if (knownCapabilities.Contains(capability, StringComparer.Ordinal)) return;
 
         var reference = CapabilityReference.Parse(capability);
