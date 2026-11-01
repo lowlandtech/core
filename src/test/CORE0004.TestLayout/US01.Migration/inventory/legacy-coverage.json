@@ -65,6 +65,13 @@
       "criteria": [
         "CORE0007-US01-SC01: the capability admission of the canonical contract distinguishes an absent registration from an empty registration"
       ]
+    },
+    {
+      "file": "CORE0009.SessionContent/US01.Contract/SC01_TheSessionContentContractCarriesThePortableDescriptor.cs",
+      "facts": 5,
+      "criteria": [
+        "CORE0009-US01-SC01: the portable session-content descriptor and provider contract is published in Core.Contracts"
+      ]
     }
   ],
   "backendParityFixtures": [

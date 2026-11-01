@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using LowlandTech.Core.Contracts.Plugins;
+using LowlandTech.Core.Contracts.Sessions;
 using LowlandTech.Core.Contracts.Transitions;
 
 namespace LowlandTech.Core.Contracts;
@@ -21,4 +22,6 @@ namespace LowlandTech.Core.Contracts;
 [JsonSerializable(typeof(PortablePluginRevision))]
 [JsonSerializable(typeof(PortablePluginScope))]
 [JsonSerializable(typeof(PortablePluginContentHash))]
+[JsonSerializable(typeof(SessionContentDescriptor))]
+[JsonSerializable(typeof(SessionContentIntent))]
 public sealed partial class TransitionContractJsonContext : JsonSerializerContext;

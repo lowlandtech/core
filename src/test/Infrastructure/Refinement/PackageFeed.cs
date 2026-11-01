@@ -46,7 +46,27 @@ public static class PackageFeed
         using var buffer = new MemoryStream();
         using (var entryStream = entry.Open()) entryStream.CopyTo(buffer);
         buffer.Position = 0;
-        using var peReader = new PEReader(buffer);
+        return PublicTypesOf(buffer);
+    }
+
+    /// <summary>
+    /// The public types that an assembly publishes. The metadata of the assembly
+    /// is read directly, so that no reflection based type loading is reachable
+    /// and the trimmed host stays usable.
+    /// </summary>
+    /// <param name="assemblyPath">The path of the assembly to read.</param>
+    /// <returns>The names of the public types of the assembly.</returns>
+    public static IReadOnlyList<string> PublicTypesOfAssembly(string assemblyPath)
+    {
+        using var buffer = new MemoryStream();
+        using (var file = File.OpenRead(assemblyPath)) file.CopyTo(buffer);
+        buffer.Position = 0;
+        return PublicTypesOf(buffer);
+    }
+
+    private static IReadOnlyList<string> PublicTypesOf(Stream assembly)
+    {
+        using var peReader = new PEReader(assembly);
         var reader = peReader.GetMetadataReader();
         var names = new List<string>();
         foreach (var handle in reader.TypeDefinitions)
