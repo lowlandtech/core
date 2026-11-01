@@ -72,6 +72,13 @@
       "criteria": [
         "CORE0009-US01-SC01: the portable session-content descriptor and provider contract is published in Core.Contracts"
       ]
+    },
+    {
+      "file": "CORE0008.EndpointGroup/US01.Mount/SC01_TheHostMountsADeclaredEndpointGroup.cs",
+      "facts": 5,
+      "criteria": [
+        "CORE0008-US01-SC01: the canonical contract declares the host-owned mount entry point of an endpoint group"
+      ]
     }
   ],
   "backendParityFixtures": [

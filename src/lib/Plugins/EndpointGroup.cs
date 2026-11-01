@@ -5,9 +5,9 @@ namespace LowlandTech.Core.Plugins;
 /// SPEC2050 US11.
 /// </summary>
 /// <remarks>
-/// Implementations override <see cref="GroupPrefix"/> and provide a routing entry
-/// point. The host wires the group into the application route table during startup
-/// (or on feature enable for hot-loaded features).
+/// Implementations override <see cref="GroupPrefix"/> and map their routes in
+/// <see cref="MapEndpoints"/>. The host wires the group into the application
+/// route table during startup (or on feature enable for hot-loaded features).
 /// </remarks>
 public abstract class EndpointGroup
 {
@@ -28,4 +28,12 @@ public abstract class EndpointGroup
     /// <c>null</c> for no policy gate.
     /// </summary>
     public virtual string? RequiredPolicy => null;
+
+    /// <summary>
+    /// The entry point the host calls to mount the routes of the group.
+    /// </summary>
+    /// <param name="context">
+    /// The host surface that owns the route table and the resolved services.
+    /// </param>
+    public abstract void MapEndpoints(IEndpointGroupContext context);
 }
