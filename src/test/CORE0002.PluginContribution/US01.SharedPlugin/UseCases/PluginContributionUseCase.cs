@@ -298,6 +298,13 @@ public sealed class PluginContributionUseCase : global::LowlandTech.Core.Tests.R
     /// The contract package that carries the portable declaration: the staged
     /// candidate of this release when it exists, and the published package of
     /// the local feed otherwise.
+    /// <para>
+    /// The feed keeps every generation and only the newest one is the package
+    /// that a consumer restores, so the published subject is the newest
+    /// generation by publication stamp. The directory order of the feed is not
+    /// that order, and a selector that took the first match compared the
+    /// assembly with a generation no consumer resolves.
+    /// </para>
     /// </summary>
     private static PublishedPackage? FindPublishedPackage()
     {
@@ -318,12 +325,32 @@ public sealed class PluginContributionUseCase : global::LowlandTech.Core.Tests.R
         }
         var feed = LocalFeed();
         if (feed is null) return null;
+        PublishedPackage? newest = null;
+        string? newestVersion = null;
         foreach (var path in Directory.EnumerateFiles(feed, "LowlandTech.Core.Contracts.*.nupkg"))
         {
+            var version = VersionOf(path);
+            if (version is null) continue;
             var package = PublishedPackage.Read(path);
-            if (package is not null && package.Names.Contains("PortablePluginManifestDeclaration")) return package;
+            if (package is null || !package.Names.Contains("PortablePluginManifestDeclaration")) continue;
+            if (newestVersion is null
+                || global::LowlandTech.Core.Tests.Refinement.PackageFeed.ComparePublication(version, newestVersion) > 0)
+            {
+                newest = package;
+                newestVersion = version;
+            }
         }
-        return null;
+        return newest;
+    }
+
+    /// <summary>The version that the file name of a published package declares.</summary>
+    private static string? VersionOf(string path)
+    {
+        const string prefix = "LowlandTech.Core.Contracts.";
+        var name = Path.GetFileName(path);
+        if (!name.StartsWith(prefix, StringComparison.Ordinal)
+            || !name.EndsWith(".nupkg", StringComparison.Ordinal)) return null;
+        return name[prefix.Length..^".nupkg".Length];
     }
 
     private static IReadOnlyList<string> AssemblyReferences(Assembly assembly)
