@@ -21,6 +21,9 @@ The rules:
   invalid-then-step        a Then step matches none of the forms of the grammar
   missing-uac-trait        a Fact carries no UAC trait
   duplicate-uac-trait      two Facts of a scenario carry the same UAC trait
+  unresolved-trait-key     a trait names a key that no constant declares
+  missing-namespace        a scenario declares no namespace
+  namespace-area-mismatch  the namespace does not carry the identity of the path
   multiple-assertions      a Fact body holds more than one assertion
   non-expression-fact      a Fact is not a single-line expression-bodied member
   empty-selection          a scenario declares no Fact at all
@@ -69,7 +72,29 @@ _GIVEN_PATTERN = re.compile(r"\[\s*Given\s*\(")
 _WHEN_PATTERN = re.compile(r"\[\s*When\s*\(")
 _THEN_PATTERN = re.compile(r"\[\s*Then\s*\(\s*\"(?P<text>[^\"]*)\"")
 _FACT_DECLARATION_PATTERN = re.compile(r"\bFact\b(?=\s*[\(\],])")
-_UAC_PATTERN = re.compile(r"\[\s*Trait\s*\(\s*\"UAC\"\s*,\s*\"(?P<number>[^\"]*)\"")
+
+#: The trait attribute of a Fact. The key is either a string literal or a
+#: compile-time constant named through its type, as in ``[Trait(Spec.UAC, "01")]``.
+_TRAIT_PATTERN = re.compile(
+    r"\[\s*Trait\s*\(\s*(?P<key>\"[^\"]*\"|[A-Za-z_][A-Za-z0-9_.]*)\s*,"
+    r"\s*\"(?P<number>[^\"]*)\""
+)
+
+#: A compile-time string constant that a test can name in a trait.
+_CONST_PATTERN = re.compile(
+    r"\bconst\s+string\s+(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*=\s*\"(?P<value>[^\"]*)\""
+)
+
+#: Declared namespaces: the file-scoped and the block forms.
+_NAMESPACE_PATTERN = re.compile(
+    r"^\s*namespace\s+(?P<name>[A-Za-z_][A-Za-z0-9_.]*)\s*(?:;|{)", re.MULTILINE
+)
+
+#: The trait keys that name the UAC that the grammar requires, spelled through
+#: the canonical constants of the shared test tooling. They resolve even when the
+#: declaring file of the constant is outside the scanned test root.
+_CANONICAL_TRAIT_KEYS = {"UAC": "UAC", "Spec.UAC": "UAC"}
+
 _SKIP_PATTERN = re.compile(r"\bSkip\s*=")
 _ASSERTION_PATTERN = re.compile(r"\.Should[A-Za-z]*\s*\(")
 
@@ -102,17 +127,81 @@ def _is_scenario(text: str) -> bool:
     )
 
 
-def _facts_of(text: str) -> list[dict[str, object]]:
-    """The Facts of a scenario file, with the shape that the gate checks."""
+def _aliases_of(root: Path) -> dict[str, str]:
+    """The compile-time string constants of a root, by constant name."""
+    aliases: dict[str, str] = {}
+    for path in sorted(root.rglob("*.cs")):
+        if any(part in PRUNED_DIRECTORIES for part in path.parts):
+            continue
+        try:
+            text = path.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            continue
+        for match in _CONST_PATTERN.finditer(text):
+            aliases.setdefault(match.group("name"), match.group("value"))
+    return aliases
+
+
+def _resolve_trait_key(key: str, aliases: dict[str, str]) -> str | None:
+    """The value of a trait key, or ``None`` when the key declares no constant.
+
+    A literal is its own value. A dotted name is read from the declared
+    constants of the scanned root first, so the constant of the tested lane is
+    the authority, and from the canonical keys of the shared tooling second.
+    """
+    if key.startswith('"'):
+        return key[1:-1]
+    name = key.split(".")[-1]
+    if name in aliases:
+        return aliases[name]
+    return _CANONICAL_TRAIT_KEYS.get(key)
+
+
+def _namespace_of(text: str) -> str | None:
+    """The declared namespace of a source file, or ``None``."""
+    match = _NAMESPACE_PATTERN.search(text)
+    return match.group("name") if match else None
+
+
+def _expected_namespace_suffix(relative: str) -> str | None:
+    """The namespace identity that the scenario path declares, or ``None``."""
+    match = SCENARIO_PATH_PATTERN.match(relative)
+    if match is None:
+        return None
+    return (f"{match.group('scope')}.{match.group('area')}"
+            f".US{match.group('story')}.{match.group('storyName')}")
+
+
+def _facts_of(text: str, aliases: dict[str, str]) -> list[dict[str, object]]:
+    """The Facts of a scenario file, with the shape that the gate checks.
+
+    The attributes of a Fact are read from the contiguous attribute block that
+    surrounds the declaration, so a trait written on its own line is seen
+    exactly like a trait written beside the ``Fact``.
+    """
     facts: list[dict[str, object]] = []
     lines = text.splitlines()
     for index, line in enumerate(lines):
         if not _FACT_DECLARATION_PATTERN.search(line):
             continue
-        attributes = line[line.find("["):] if "[" in line else line
-        uac = _UAC_PATTERN.search(line)
+        start = index
+        while start > 0 and lines[start - 1].strip().startswith("["):
+            start -= 1
+        end = index
+        while end + 1 < len(lines) and lines[end + 1].strip().startswith("["):
+            end += 1
+        attributes = "\n".join(lines[start:end + 1])
+        uac: str | None = None
+        unresolved: str | None = None
+        for trait in _TRAIT_PATTERN.finditer(attributes):
+            key = trait.group("key")
+            value = _resolve_trait_key(key, aliases)
+            if value is None:
+                unresolved = unresolved or key
+            elif value == "UAC" and uac is None:
+                uac = trait.group("number")
         body_lines: list[str] = []
-        cursor = index + 1
+        cursor = end + 1
         while cursor < len(lines):
             candidate = lines[cursor]
             if not candidate.strip():
@@ -132,13 +221,16 @@ def _facts_of(text: str) -> list[dict[str, object]]:
         body = "\n".join(body_lines)
         facts.append({
             "line": index + 1,
-            "uac": uac.group("number") if uac else None,
+            "uac": uac,
+            "unresolvedTraitKey": unresolved,
             "skipped": bool(_SKIP_PATTERN.search(attributes)),
             "assertions": len(_ASSERTION_PATTERN.findall(body)),
             "expressionBodied": "=>" in body and body.rstrip().endswith(";"),
             "lines": len([line for line in body_lines if line.strip()]),
         })
     return facts
+
+
 
 
 def _then_steps(text: str) -> list[str]:
@@ -151,6 +243,7 @@ def scan(root: Path) -> dict[str, object]:
     scenarios: list[dict[str, object]] = []
     legacy: list[dict[str, object]] = []
     violations: list[dict[str, str]] = []
+    aliases = _aliases_of(root)
 
     for path in sorted(root.rglob("*.cs")):
         if any(part in PRUNED_DIRECTORIES for part in path.parts):
@@ -161,7 +254,7 @@ def scan(root: Path) -> dict[str, object]:
             continue
         relative = path.relative_to(root).as_posix()
         if not _is_scenario(text):
-            facts = _facts_of(text)
+            facts = _facts_of(text, aliases)
             if facts:
                 legacy.append({
                     "file": relative,
@@ -173,7 +266,7 @@ def scan(root: Path) -> dict[str, object]:
         lines = text.splitlines()
         given = len(_GIVEN_PATTERN.findall(text))
         when = len(_WHEN_PATTERN.findall(text))
-        facts = _facts_of(text)
+        facts = _facts_of(text, aliases)
         types = [_CLASS_PATTERN.search(line) for line in lines]
         types = [match.group("name") for match in types if match]
         scenario_types = [name for name in types if _SCENARIO_CLASS_PATTERN.match(name)]
@@ -187,13 +280,35 @@ def scan(root: Path) -> dict[str, object]:
                     "detail": f"The step '{step}' matches no form of the grammar.",
                 })
 
-        if not re.match(SCENARIO_PATH_PATTERN, relative):
+        path_match = re.match(SCENARIO_PATH_PATTERN, relative)
+        if not path_match:
             violations.append({
                 "code": "invalid-scenario-path",
                 "file": relative,
                 "detail": "A scenario file does not live at "
                           "src/test/<SCOPE>.<Area>/US##.<Story>/SC##_<Name>.cs.",
             })
+        else:
+            declared = _namespace_of(text)
+            expected = _expected_namespace_suffix(relative)
+            if declared is None:
+                violations.append({
+                    "code": "missing-namespace",
+                    "file": relative,
+                    "detail": "The scenario declares no namespace, so a namespace "
+                              "filter cannot select it.",
+                })
+            elif expected is not None:
+                actual_segments = [segment.lower() for segment in declared.split(".")]
+                identity = [segment.lower() for segment in expected.split(".")]
+                if actual_segments[-len(identity):] != identity:
+                    violations.append({
+                        "code": "namespace-area-mismatch",
+                        "file": relative,
+                        "detail": f"The namespace '{declared}' does not carry the "
+                                  f"identity '{expected}' of the path.",
+                    })
+
         if given == 0:
             violations.append({
                 "code": "missing-given", "file": relative,
@@ -224,7 +339,12 @@ def scan(root: Path) -> dict[str, object]:
         for fact in facts:
             location = f"{relative}:{fact['line']}"
             uac = fact["uac"]
-            if uac is None:
+            if fact["unresolvedTraitKey"] is not None:
+                violations.append({
+                    "code": "unresolved-trait-key", "file": location,
+                    "detail": f"The trait key {fact['unresolvedTraitKey']} declares no constant.",
+                })
+            elif uac is None:
                 violations.append({
                     "code": "missing-uac-trait", "file": location,
                     "detail": "The Fact carries no UAC trait.",
