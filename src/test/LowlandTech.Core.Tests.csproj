@@ -14,6 +14,13 @@
     <PackageReference Include="Shouldly" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
+    <!-- The tests run the repository gates from their own process, and an
+         isolated artifacts path puts the test binary outside the checkout.
+         The build-time root keeps the discovery independent of the runtime
+         directory; GateRunner verifies the marker before it trusts it. -->
+    <AssemblyMetadata Include="RepositoryRoot" Value="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../..'))" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="fixtures/**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

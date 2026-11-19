@@ -54,14 +54,39 @@ public static class GateRunner
     /// <summary>The root of the Core repository the test runs from.</summary>
     public static string? RepositoryRoot(string marker)
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
+        // An explicit root wins, so an isolated-output run can name the
+        // checkout it measures.
+        var configured = Environment.GetEnvironmentVariable("LOWLANDTECH_REPOSITORY_ROOT");
+        if (!string.IsNullOrWhiteSpace(configured))
         {
-            if (File.Exists(Path.Combine(directory.FullName, "eng", marker))
-                && Directory.Exists(Path.Combine(directory.FullName, "src", "test")))
-                return directory.FullName;
-            directory = directory.Parent;
+            var named = Path.GetFullPath(configured);
+            if (CarriesMarker(named, marker)) return named;
+        }
+
+        // The build put the root into the test assembly, so discovery does not
+        // depend on the directory the test host was started from.
+        var embedded = typeof(GateRunner).Assembly
+            .GetCustomAttributes(typeof(System.Reflection.AssemblyMetadataAttribute), false)
+            .OfType<System.Reflection.AssemblyMetadataAttribute>()
+            .FirstOrDefault(attribute => attribute.Key == "RepositoryRoot")?.Value;
+        if (!string.IsNullOrWhiteSpace(embedded) && CarriesMarker(embedded, marker))
+            return Path.GetFullPath(embedded);
+
+        // The working directory and the base directory are fallbacks for a run
+        // that copies the assembly into the repository.
+        foreach (var origin in new[] { Directory.GetCurrentDirectory(), AppContext.BaseDirectory })
+        {
+            var directory = new DirectoryInfo(origin);
+            while (directory is not null)
+            {
+                if (CarriesMarker(directory.FullName, marker)) return directory.FullName;
+                directory = directory.Parent;
+            }
         }
         return null;
     }
+
+    private static bool CarriesMarker(string root, string marker)
+        => File.Exists(Path.Combine(root, "eng", marker))
+           && Directory.Exists(Path.Combine(root, "src", "test"));
 }
