@@ -309,17 +309,11 @@ public sealed class GitFlowContractUseCase : global::LowlandTech.Core.Tests.Refi
     /// <summary>The local feed the repository resolves its packages from.</summary>
     private static string? LocalFeed()
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "NuGet.config")))
-            {
-                var candidate = Path.GetFullPath(Path.Combine(directory.FullName, "..", "packages"));
-                return Directory.Exists(candidate) ? candidate : null;
-            }
-            directory = directory.Parent;
-        }
-        return null;
+        var root = global::LowlandTech.Core.Tests.Refinement.GateRunner
+            .RepositoryRoot("verify-test-layout.py");
+        if (root is null) return null;
+        var candidate = Path.GetFullPath(Path.Combine(root, "..", "packages"));
+        return Directory.Exists(candidate) ? candidate : null;
     }
 
     /// <summary>The public type names of an assembly.</summary>
