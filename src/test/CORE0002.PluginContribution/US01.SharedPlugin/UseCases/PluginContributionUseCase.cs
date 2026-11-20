@@ -257,32 +257,16 @@ public sealed class PluginContributionUseCase : global::LowlandTech.Core.Tests.R
     /// <summary>The local feed the repository resolves its packages from.</summary>
     private static string? LocalFeed()
     {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "NuGet.config")))
-            {
-                var candidate = Path.GetFullPath(Path.Combine(directory.FullName, "..", "packages"));
-                return Directory.Exists(candidate) ? candidate : null;
-            }
-            directory = directory.Parent;
-        }
-        return null;
+        var root = RepositoryRoot();
+        if (root is null) return null;
+        var candidate = Path.GetFullPath(Path.Combine(root, "..", "packages"));
+        return Directory.Exists(candidate) ? candidate : null;
     }
 
     /// <summary>The root of the repository the test runs from.</summary>
     private static string? RepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "NuGet.config"))
-                && Directory.Exists(Path.Combine(directory.FullName, "src", "test")))
-                return directory.FullName;
-            directory = directory.Parent;
-        }
-        return null;
-    }
+        => global::LowlandTech.Core.Tests.Refinement.GateRunner
+            .RepositoryRoot("verify-test-layout.py");
 
     /// <summary>The package version the contract assembly of this build carries.</summary>
     private static string? PackageVersionOf(Assembly assembly)
