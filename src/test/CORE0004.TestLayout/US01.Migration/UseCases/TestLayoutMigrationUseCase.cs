@@ -453,15 +453,6 @@ public sealed class TestLayoutMigrationUseCase : global::LowlandTech.Core.Tests.
 
     /// <summary>The root of the Core repository the test runs from.</summary>
     private static string? FindRepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "eng", "verify-test-layout.py"))
-                && Directory.Exists(Path.Combine(directory.FullName, "src", "test")))
-                return directory.FullName;
-            directory = directory.Parent;
-        }
-        return null;
-    }
+        => global::LowlandTech.Core.Tests.Refinement.GateRunner
+            .RepositoryRoot("verify-test-layout.py");
 }
