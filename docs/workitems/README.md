@@ -6,6 +6,7 @@
 | M4 | Legacy Core retirement and EF-free package closure | Package/Consumer |
 | M5 | Agentic-gherkin test layout and regression parity | Test/Layout |
 | M6 | Graph git-flow contract for client surfaces | Contract/Consumer |
+| M7 | Generic read contract semantics | Contract/Consumer |
 
 | Work | Scope | Title | Priority | Lane | Depends on | Status | Refined | Issue |
 |---|---|---|---|---|---|---|---|---|
@@ -27,3 +28,4 @@
 | M5-004 | CORE0015-US01-SC01 | [Define the browser-aware scenario contract](done/CORE0015.US01.SC01.browser-aware-scenario-contract.md) | P1 | core | M5-001 | done | true | [#20](https://github.com/lowlandtech/core/issues/20) |
 | M5-005 | CORE0016-US01-SC01 | [Separate support files from scenarios in the layout gate](todo/CORE0016.US01.SC01.support-file-discovery-rule.md) | P2 | core | M5-001 | proposal | true | [#21](https://github.com/lowlandtech/core/issues/21) |
 | M6-001 | CORE0005-US01-SC01 | [Publish merge-request and feature-proposal states for clients](done/CORE0005.US01.SC01.git-flow-client-contract.md) | P0 | core | M1-001 | done | true | [#10](https://github.com/lowlandtech/core/issues/10) |
+| M7-001 | CORE0017-US01-SC01 | [Assess the stale-revision clause of the generic read contract](todo/CORE0017.US01.SC01.stale-read-contract-assessment.md) | P2 | core | None | proposal | true | [#22](https://github.com/lowlandtech/core/issues/22) |
